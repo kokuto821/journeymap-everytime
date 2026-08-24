@@ -1,0 +1,13 @@
+{
+  "extraKnownMarketplaces": {
+    "claude-harness-kit": {
+      "source": {
+        "source": "github",
+        "repo": "kokuto821/claude-harness-kit"
+      }
+    }
+  },
+  "enabledPlugins": {
+    "claude-harness-kit@claude-harness-kit": true
+  }
+}
