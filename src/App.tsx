@@ -1,101 +1,41 @@
-import { useState } from 'react';
-import reactLogo from './assets/react.svg';
-import viteLogo from './assets/vite.svg';
-import heroImg from './assets/hero.png';
+import { THEME_NAMES } from './domain/theme/ThemeName';
+import { useTheme } from './ui/theme/useTheme';
 import './App.css';
 
+const THEME_LABELS: Record<(typeof THEME_NAMES)[number], string> = {
+  simple: 'シンプル',
+  retro: 'レトロゲーム',
+};
+
+/**
+ * テーマ基盤の動作確認用の暫定シェル。
+ * 地図ビュー(S-01)の実装(F-001)で本来の画面に置き換える。
+ * ここに置いたテーマ切替も暫定で、S-01上での配置は #5 / F-002 側で決める。
+ */
 function App() {
-  const [count, setCount] = useState(0);
+  const { themeName, setThemeName } = useTheme();
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button type="button" className="counter" onClick={() => setCount((count) => count + 1)}>
-          Count is {count}
-        </button>
-      </section>
+    <main className="app-shell">
+      <section className="app-panel">
+        <h1>マイクラMAPエディター</h1>
+        <p>地図ビュー(S-01)は F-001 で実装する。現在はテーマ基盤の動作確認用の暫定画面。</p>
 
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg className="button-icon" role="presentation" aria-hidden="true">
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg className="button-icon" role="presentation" aria-hidden="true">
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg className="button-icon" role="presentation" aria-hidden="true">
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg className="button-icon" role="presentation" aria-hidden="true">
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
+        <div className="theme-switch" role="group" aria-label="テーマ切替">
+          {THEME_NAMES.map((name) => (
+            <button
+              key={name}
+              type="button"
+              className="theme-switch__button"
+              aria-pressed={name === themeName}
+              onClick={() => setThemeName(name)}
+            >
+              {THEME_LABELS[name]}
+            </button>
+          ))}
         </div>
       </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
+    </main>
   );
 }
 

@@ -1,0 +1,54 @@
+/*
+ * テーマ変数。テーマ間で「差が出るもの」だけをここに置く。
+ * テーマに依存しない値(スペーシング・フォントサイズ・本文/等幅フォント)は tokens.css 側。
+ *
+ * トークン名は openspec/changes/add-mvp-map-viewer/design.md
+ * 「UIデザイン: 配色・フォント・テーマ」で決定したMaterial Design 3風の
+ * セマンティックトークン体系(7色トークン)に対応する。
+ */
+
+/* シンプルテーマ(既定)。白基調のクリーンなライトUI */
+:root,
+:root[data-theme='simple'] {
+  --background: #fdf7ff;
+  --surface: #fdf7ff;
+  --on-surface: #1d1b20;
+  --on-surface-variant: #494551;
+  --outline: #7a7582;
+  --primary: #4f378a;
+  --on-primary: #ffffff;
+
+  /* 影無し(フラット)、境界線1px、角丸12px */
+  --border-width: 1px;
+  --radius: 0.75rem;
+  --shadow: none;
+  --shadow-raised: none;
+  --press-offset: 0;
+
+  --font-display: system-ui, 'Noto Sans JP', sans-serif;
+}
+
+/*
+ * レトロゲームテーマ。明るい青基調のアーケード配色。
+ * 要件定義書9章の方針によりアクセシビリティは保証対象外。
+ */
+:root[data-theme='retro'] {
+  --background: #3f6cff;
+  --surface: #fffdf5;
+  --on-surface: #1a1a1e;
+  --on-surface-variant: #494551;
+  --outline: #1a1a1e;
+  --primary: #ffd23f;
+  --on-primary: #1a1a1e;
+
+  /* 太い黒枠＋ぼかし無しハードシャドウ、角丸なし */
+  --border-width: 3px;
+  --radius: 0;
+  --shadow: 4px 4px 0 var(--on-surface);
+  /* 選択中の要素は影を一段大きくしてポップさせる */
+  --shadow-raised: 6px 6px 0 var(--on-surface);
+  /* 押下時に右下へ沈み込む量 */
+  --press-offset: 2px;
+
+  --font-display: 'DotGothic16', system-ui, 'Noto Sans JP', sans-serif;
+}
