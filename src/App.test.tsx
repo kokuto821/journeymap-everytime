@@ -1,16 +1,16 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, test } from 'vitest';
 import App from './App';
 
 describe('App', () => {
-  it('見出しを描画する', () => {
+  test('見出しを描画する', () => {
     render(<App />);
 
     expect(screen.getByRole('heading', { name: 'Get started' })).toBeInTheDocument();
   });
 
-  it('ボタンを押すとカウントが増える', async () => {
+  test('ボタンを押すとカウントが増える', async () => {
     const user = userEvent.setup();
     render(<App />);
 
