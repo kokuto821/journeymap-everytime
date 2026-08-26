@@ -1,23 +1,23 @@
-/* 暫定シェルのスタイル。F-001で地図ビューに置き換える際にあわせて差し替える。 */
+/* 暫定シェルのスタイル。F-001で地図ビュー(S-01)に置き換える際にあわせて差し替える。 */
 .app-shell {
   display: flex;
   align-items: center;
   justify-content: center;
   min-height: 100%;
-  padding: var(--space-l);
+  padding: var(--space-m);
 }
 
 .app-panel {
   display: flex;
   flex-direction: column;
-  gap: var(--space-m);
+  gap: var(--space-s);
   max-width: 32rem;
-  padding: var(--space-l);
-  border: var(--border-width-panel) solid var(--color-border);
-  border-radius: var(--radius-m);
-  background-color: var(--color-main);
-  box-shadow: var(--shadow-panel);
-  color: var(--color-text);
+  padding: var(--space-s);
+  border: var(--border-width) solid var(--outline);
+  border-radius: var(--radius);
+  background-color: var(--surface);
+  box-shadow: var(--shadow);
+  color: var(--on-surface);
 }
 
 .app-panel h1 {
@@ -26,26 +26,37 @@
 
 .app-panel p {
   margin: 0;
-  color: var(--color-text-secondary);
+  color: var(--on-surface-variant);
   font-size: var(--font-size-s);
 }
 
+/* ピル形状のボタンバー。両テーマとも丸形状を維持する(design.mdの例外指定) */
 .theme-switch {
   display: flex;
   gap: var(--space-xs);
+  align-self: flex-start;
+  padding: var(--space-2xs);
+  border: var(--border-width) solid var(--outline);
+  border-radius: var(--radius-pill);
+  background-color: var(--surface);
+  box-shadow: var(--shadow);
 }
 
 .theme-switch__button {
-  padding: var(--space-xs) var(--space-m);
-  border: var(--border-width-panel) solid var(--color-border);
-  border-radius: var(--radius-s);
-  background-color: var(--color-control);
-  color: var(--color-text);
+  padding: var(--space-2xs) var(--space-s);
+  border: none;
+  border-radius: var(--radius-pill);
+  background-color: transparent;
+  color: var(--on-surface-variant);
   cursor: pointer;
 }
 
 .theme-switch__button[aria-pressed='true'] {
-  border-color: var(--color-accent);
-  background-color: var(--color-accent);
-  color: var(--color-on-accent);
+  background-color: var(--primary);
+  color: var(--on-primary);
+}
+
+/* レトロテーマでは押下時に影が消えて右下へ沈み込む(シンプルテーマでは0のため無効) */
+.theme-switch__button:active {
+  translate: var(--press-offset) var(--press-offset);
 }

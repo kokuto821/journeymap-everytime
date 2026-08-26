@@ -1,59 +1,54 @@
 /*
- * テーマ変数(色・影・フォントファミリ)。
- * UI哲学.mdの方針に従い、テーマが管理するのは「色」「影・光」とフォントの選択のみ。
- * サイズ・余白・角丸・フォントサイズはテーマに含めず tokens.css 側で定義する。
+ * テーマ変数。テーマ間で「差が出るもの」だけをここに置く。
+ * テーマに依存しない値(スペーシング・フォントサイズ・本文/等幅フォント)は tokens.css 側。
  *
- * 配色は openspec/changes/add-mvp-map-viewer/design.md「UIデザイン: 配色・フォント・テーマ」
- * の決定内容(70/25/5ルール)に対応する。
+ * トークン名は openspec/changes/add-mvp-map-viewer/design.md
+ * 「UIデザイン: 配色・フォント・テーマ」で決定したMaterial Design 3風の
+ * セマンティックトークン体系(7色トークン)に対応する。
  */
 
-/* シンプルテーマ(既定)。白基調・コントラスト比4.5:1以上を確保する */
+/* シンプルテーマ(既定)。白基調のクリーンなライトUI */
 :root,
 :root[data-theme='simple'] {
-  /* base 70% */
-  --color-base: #ffffff;
-  /* main 25% */
-  --color-main: #f0f0ee;
-  --color-border: #d8d8d4;
-  /* パネル上に置くボタン等のコントロール地色 */
-  --color-control: #ffffff;
-  /* accent 5% */
-  --color-accent: #16a34a;
-  --color-on-accent: #ffffff;
+  --background: #fdf7ff;
+  --surface: #fdf7ff;
+  --on-surface: #1d1b20;
+  --on-surface-variant: #494551;
+  --outline: #7a7582;
+  --primary: #4f378a;
+  --on-primary: #ffffff;
 
-  --color-text: #1a1a1e;
-  --color-text-secondary: #5a5a63;
-  --color-text-on-base: #1a1a1e;
+  /* 影無し(フラット)、境界線1px、角丸12px */
+  --border-width: 1px;
+  --radius: 0.75rem;
+  --shadow: none;
+  --shadow-raised: none;
+  --press-offset: 0;
 
-  --border-width-panel: 1px;
-  --shadow-panel: none;
-  --shadow-panel-raised: none;
-
-  --font-body: system-ui, 'Noto Sans JP', sans-serif;
-  --font-ui: system-ui, 'Noto Sans JP', sans-serif;
+  --font-display: system-ui, 'Noto Sans JP', sans-serif;
 }
 
 /*
  * レトロゲームテーマ。明るい青基調のアーケード配色。
- * 太い黒枠とぼかし無しのハードシャドウで押し込み感を出す。
  * 要件定義書9章の方針によりアクセシビリティは保証対象外。
  */
 :root[data-theme='retro'] {
-  --color-base: #3f6cff;
-  --color-main: #fffdf5;
-  --color-border: #1a1a1e;
-  --color-control: #fffdf5;
-  --color-accent: #ffd23f;
-  --color-on-accent: #1a1a1e;
+  --background: #3f6cff;
+  --surface: #fffdf5;
+  --on-surface: #1a1a1e;
+  --on-surface-variant: #494551;
+  --outline: #1a1a1e;
+  --primary: #ffd23f;
+  --on-primary: #1a1a1e;
 
-  --color-text: #1a1a1e;
-  --color-text-secondary: #4a4a52;
-  --color-text-on-base: #fffdf5;
+  /* 太い黒枠＋ぼかし無しハードシャドウ、角丸なし */
+  --border-width: 3px;
+  --radius: 0;
+  --shadow: 4px 4px 0 var(--on-surface);
+  /* 選択中の要素は影を一段大きくしてポップさせる */
+  --shadow-raised: 6px 6px 0 var(--on-surface);
+  /* 押下時に右下へ沈み込む量 */
+  --press-offset: 2px;
 
-  --border-width-panel: 3px;
-  --shadow-panel: 4px 4px 0 #1a1a1e;
-  --shadow-panel-raised: 6px 6px 0 #1a1a1e;
-
-  --font-body: system-ui, 'Noto Sans JP', sans-serif;
-  --font-ui: 'DotGothic16', system-ui, 'Noto Sans JP', sans-serif;
+  --font-display: 'DotGothic16', system-ui, 'Noto Sans JP', sans-serif;
 }

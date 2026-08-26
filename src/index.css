@@ -15,8 +15,8 @@ body,
 
 body {
   margin: 0;
-  background-color: var(--color-base);
-  color: var(--color-text-on-base);
+  background-color: var(--background);
+  color: var(--on-surface);
   font-family: var(--font-body);
   font-size: var(--font-size-m);
   line-height: var(--line-height-body);
@@ -27,16 +27,22 @@ h1,
 h2,
 h3 {
   margin: 0;
-  font-family: var(--font-ui);
+  font-family: var(--font-display);
   line-height: var(--line-height-heading);
 }
 
 button {
-  font-family: var(--font-ui);
+  font-family: var(--font-display);
   font-size: var(--font-size-m);
 }
 
+/* 座標などの数値表示用。F-003のCoordinatePanelで使う */
+.numeric {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
 :focus-visible {
-  outline: 2px solid var(--color-accent);
+  outline: 2px solid var(--primary);
   outline-offset: 2px;
 }

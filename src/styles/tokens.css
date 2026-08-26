@@ -1,17 +1,21 @@
 /*
- * テーマに依存しないデザイントークン(サイズ・余白・角丸・フォントサイズ)。
- * UI哲学.mdの方針により、これらはテーマ変数に含めない。
+ * テーマに依存しないデザイントークン。
+ * テーマごとに値が変わるもの(色・影・角丸・見出しフォント)は theme.css 側。
  */
 :root {
-  --space-2xs: 0.25rem;
-  --space-xs: 0.5rem;
-  --space-s: 0.75rem;
-  --space-m: 1rem;
-  --space-l: 1.5rem;
-  --space-xl: 2rem;
+  /* スペーシングは8pxグリッド基準(design.md「シェイプ・スペーシング」) */
+  --space-2xs: 0.25rem; /* 4px  アイコン内の詰め */
+  --space-xs: 0.5rem; /* 8px  要素間隔 */
+  --space-s: 0.75rem; /* 12px パネル内パディング */
+  --space-m: 1rem; /* 16px 画面端マージン */
+  --space-l: 1.5rem; /* 24px 大きい余白 */
 
-  --radius-s: 0.25rem;
-  --radius-m: 0.5rem;
+  /* ピル形状(BottomNavBar等)は両テーマ共通で丸を維持する例外 */
+  --radius-pill: 999px;
+
+  --font-body: system-ui, 'Noto Sans JP', sans-serif;
+  /* 座標の数値表示。桁数変化で文字幅がジッターしないよう等幅にする */
+  --font-mono: 'Courier Prime', ui-monospace, monospace;
 
   --font-size-s: 0.875rem;
   --font-size-m: 1rem;
@@ -20,4 +24,7 @@
 
   --line-height-body: 1.6;
   --line-height-heading: 1.3;
+
+  /* TopAppBarの高さ(design.md S-01レイアウト) */
+  --top-app-bar-height: 3rem;
 }
