@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, test } from 'vitest';
+import type { ThemeName } from '../../domain/theme/ThemeName';
 import { ThemeProvider } from './ThemeProvider';
 import { useTheme } from './useTheme';
 
@@ -20,47 +21,60 @@ function ThemeProbe() {
   );
 }
 
-function renderWithProvider() {
+function renderProbe(initialThemeName?: ThemeName) {
   return render(
-    <ThemeProvider>
+    <ThemeProvider initialThemeName={initialThemeName}>
       <ThemeProbe />
     </ThemeProvider>,
   );
 }
 
 describe('ThemeProvider / useTheme', () => {
-  test('既定でシンプルテーマが適用される', () => {
-    renderWithProvider();
+  test('初期テーマを指定せずに描画したらシンプルテーマが適用される', () => {
+    // Act
+    renderProbe();
 
+    // Assert
     expect(screen.getByRole('status')).toHaveTextContent('simple');
     expect(document.documentElement.dataset.theme).toBe('simple');
   });
 
-  test('初期テーマを指定できる', () => {
-    render(
-      <ThemeProvider initialThemeName="retro">
-        <ThemeProbe />
-      </ThemeProvider>,
-    );
+  test('初期テーマにレトロを指定して描画したらレトロテーマが適用される', () => {
+    // Act
+    renderProbe('retro');
 
+    // Assert
     expect(document.documentElement.dataset.theme).toBe('retro');
   });
 
-  test('テーマを切り替えるとルート要素のdata-theme属性が変わる', async () => {
+  test('setThemeNameでレトロテーマに切り替えたらdata-theme属性がretroになる', async () => {
+    // Arrange
     const user = userEvent.setup();
-    renderWithProvider();
+    renderProbe();
 
+    // Act
     await user.click(screen.getByRole('button', { name: 'レトロにする' }));
 
+    // Assert
     expect(screen.getByRole('status')).toHaveTextContent('retro');
     expect(document.documentElement.dataset.theme).toBe('retro');
+  });
 
+  test('レトロテーマからシンプルテーマに戻したらdata-theme属性がsimpleになる', async () => {
+    // Arrange
+    const user = userEvent.setup();
+    renderProbe('retro');
+
+    // Act
     await user.click(screen.getByRole('button', { name: 'シンプルにする' }));
 
+    // Assert
+    expect(screen.getByRole('status')).toHaveTextContent('simple');
     expect(document.documentElement.dataset.theme).toBe('simple');
   });
 
-  test('ThemeProviderの外でuseThemeを使うとエラーになる', () => {
+  test('ThemeProviderの外でuseThemeを呼んだらエラーを投げる', () => {
+    // Act / Assert
     expect(() => render(<ThemeProbe />)).toThrow(/ThemeProvider/);
   });
 });

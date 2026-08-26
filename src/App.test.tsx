@@ -13,15 +13,19 @@ function renderApp() {
 }
 
 describe('App', () => {
-  test('見出しを描画する', () => {
+  test('アプリを描画したら見出しが表示される', () => {
+    // Act
     renderApp();
 
+    // Assert
     expect(screen.getByRole('heading', { name: 'マイクラMAPエディター' })).toBeInTheDocument();
   });
 
-  test('既定ではシンプルテーマが選択されている', () => {
+  test('アプリを描画したらシンプルテーマが選択された状態になる', () => {
+    // Act
     renderApp();
 
+    // Assert
     expect(screen.getByRole('button', { name: 'シンプル' })).toHaveAttribute(
       'aria-pressed',
       'true',
@@ -29,12 +33,15 @@ describe('App', () => {
     expect(document.documentElement.dataset.theme).toBe('simple');
   });
 
-  test('テーマ切替ボタンで選択中のテーマが変わる', async () => {
+  test('レトロゲームのテーマ切替ボタンを押したらレトロテーマが選択される', async () => {
+    // Arrange
     const user = userEvent.setup();
     renderApp();
 
+    // Act
     await user.click(screen.getByRole('button', { name: 'レトロゲーム' }));
 
+    // Assert
     expect(screen.getByRole('button', { name: 'レトロゲーム' })).toHaveAttribute(
       'aria-pressed',
       'true',
