@@ -20,5 +20,12 @@ export default defineConfig([
       globals: globals.browser,
     },
   },
+  {
+    // ローカル実行スクリプト(F-004/F-005)とNode上で動く設定ファイルはNode環境
+    files: ['scripts/**/*.ts', '*.config.ts'],
+    languageOptions: {
+      globals: globals.node,
+    },
+  },
   prettierConfig,
 ]);
