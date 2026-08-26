@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, test } from 'vitest';
 import { ThemeProvider } from './ThemeProvider';
 import { useTheme } from './useTheme';
 
@@ -29,14 +29,14 @@ function renderWithProvider() {
 }
 
 describe('ThemeProvider / useTheme', () => {
-  it('既定でシンプルテーマが適用される', () => {
+  test('既定でシンプルテーマが適用される', () => {
     renderWithProvider();
 
     expect(screen.getByRole('status')).toHaveTextContent('simple');
     expect(document.documentElement.dataset.theme).toBe('simple');
   });
 
-  it('初期テーマを指定できる', () => {
+  test('初期テーマを指定できる', () => {
     render(
       <ThemeProvider initialThemeName="retro">
         <ThemeProbe />
@@ -46,7 +46,7 @@ describe('ThemeProvider / useTheme', () => {
     expect(document.documentElement.dataset.theme).toBe('retro');
   });
 
-  it('テーマを切り替えるとルート要素のdata-theme属性が変わる', async () => {
+  test('テーマを切り替えるとルート要素のdata-theme属性が変わる', async () => {
     const user = userEvent.setup();
     renderWithProvider();
 
@@ -60,7 +60,7 @@ describe('ThemeProvider / useTheme', () => {
     expect(document.documentElement.dataset.theme).toBe('simple');
   });
 
-  it('ThemeProviderの外でuseThemeを使うとエラーになる', () => {
+  test('ThemeProviderの外でuseThemeを使うとエラーになる', () => {
     expect(() => render(<ThemeProbe />)).toThrow(/ThemeProvider/);
   });
 });

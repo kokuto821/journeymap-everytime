@@ -30,7 +30,7 @@ npm run format            # Prettierでファイルを整形
 npm run format:check       # 整形崩れのチェックのみ(修正しない)
 ```
 
-テストは Vitest。`src/`(jsdom環境、React Testing Library)と `scripts/`(Node環境)を `vitest.config.ts` の `projects` で分離し、`npm run test` で一括実行する。テストファイルは実装と同じディレクトリに `*.test.ts(x)` として置く。
+テストは Vitest。`src/`(jsdom環境、React Testing Library)と `scripts/`(Node環境)を `vitest.config.ts` の `projects` で分離し、`npm run test` で一括実行する。テストファイルは実装と同じディレクトリに `*.test.ts(x)` として置く。テストケースは `it` ではなく `test` を使う。
 
 ## アーキテクチャ
 

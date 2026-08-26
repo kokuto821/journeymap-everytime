@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, test } from 'vitest';
 import App from './App';
 import { ThemeProvider } from './ui/theme/ThemeProvider';
 
@@ -13,13 +13,13 @@ function renderApp() {
 }
 
 describe('App', () => {
-  it('見出しを描画する', () => {
+  test('見出しを描画する', () => {
     renderApp();
 
     expect(screen.getByRole('heading', { name: 'マイクラMAPエディター' })).toBeInTheDocument();
   });
 
-  it('既定ではシンプルテーマが選択されている', () => {
+  test('既定ではシンプルテーマが選択されている', () => {
     renderApp();
 
     expect(screen.getByRole('button', { name: 'シンプル' })).toHaveAttribute(
@@ -29,7 +29,7 @@ describe('App', () => {
     expect(document.documentElement.dataset.theme).toBe('simple');
   });
 
-  it('テーマ切替ボタンで選択中のテーマが変わる', async () => {
+  test('テーマ切替ボタンで選択中のテーマが変わる', async () => {
     const user = userEvent.setup();
     renderApp();
 
