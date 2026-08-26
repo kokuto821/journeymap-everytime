@@ -22,18 +22,20 @@ npm install            # 依存関係インストール
 npm run dev             # 開発サーバー起動(デフォルト http://localhost:5173、使用中なら別ポートに自動フォールバック)
 npm run build            # 型チェック(tsc -b) + 本番ビルド
 npm run preview           # ビルド成果物のプレビュー
+npm run test             # テストを1回実行(Vitest)
+npm run test:watch        # テストをwatchモードで実行
 npm run lint             # ESLintでチェック
 npm run lint:fix          # ESLintで自動修正
 npm run format            # Prettierでファイルを整形
 npm run format:check       # 整形崩れのチェックのみ(修正しない)
 ```
 
-テストフレームワークは未導入。
+テストは Vitest。`src/`(jsdom環境、React Testing Library)と `scripts/`(Node環境)を `vitest.config.ts` の `projects` で分離し、`npm run test` で一括実行する。テストファイルは実装と同じディレクトリに `*.test.ts(x)` として置く。テストケースは `it` ではなく `test` を使う。
 
 ## アーキテクチャ
 
 - **フロントエンド**: Vite + React + TypeScript。要件定義書の技術構成(10章)ではタイル表示に Leaflet を使う方針(JourneyMapのXYZタイル構造との親和性を優先)。React配下での導入は react-leaflet 等を想定するが未導入。
-- **ビルド設定**: `vite.config.ts`(Vite本体)、`tsconfig.json` が `tsconfig.app.json`(アプリコード用)と `tsconfig.node.json`(Vite設定など Node 実行コード用)を参照するプロジェクト分割構成。
+- **ビルド設定**: `vite.config.ts`(Vite本体)、`vitest.config.ts`(テスト実行専用。Vite本体の設定とは分離している)、`tsconfig.json` が `tsconfig.app.json`(アプリコード用)と `tsconfig.node.json`(Vite/Vitest設定・`scripts/`配下など Node 実行コード用)を参照するプロジェクト分割構成。
 - **Lint/Format**: `eslint.config.js` は flat config。`js.configs.recommended` + `typescript-eslint` + `eslint-plugin-react-hooks` + `eslint-plugin-react-refresh` に加え、配列末尾で `eslint-config-prettier/flat` を適用し、ESLintのスタイル系ルールとPrettierの競合を無効化している。ESLintはコード品質、Prettierはフォーマット専用という役割分担。
 - **`.prettierignore`** は `*.md` を除外している。日本語ドキュメント(README、要件定義書)がPrettierの対象になると意図しない差分が入るため。ドキュメント系ファイルを新設する場合もこの除外に従う。
 - **データ/インフラ(将来実装分、要件定義書10章)**: ホスティングは Cloudflare Pages(フロント配信)+ Cloudflare R2(タイル等の静的データ、約168MB)。必要に応じて Cloudflare Workers。エクスポート/デプロイは JourneyMapのローカルデータ(`.minecraft/journeymap/data`)を読み取るローカルスクリプトと Wrangler CLI 等で行う想定(このリポジトリにはまだスクリプト本体は無い)。
