@@ -1,0 +1,23 @@
+/*
+ * テーマに依存しないデザイントークン(サイズ・余白・角丸・フォントサイズ)。
+ * UI哲学.mdの方針により、これらはテーマ変数に含めない。
+ */
+:root {
+  --space-2xs: 0.25rem;
+  --space-xs: 0.5rem;
+  --space-s: 0.75rem;
+  --space-m: 1rem;
+  --space-l: 1.5rem;
+  --space-xl: 2rem;
+
+  --radius-s: 0.25rem;
+  --radius-m: 0.5rem;
+
+  --font-size-s: 0.875rem;
+  --font-size-m: 1rem;
+  --font-size-l: 1.25rem;
+  --font-size-xl: 1.75rem;
+
+  --line-height-body: 1.6;
+  --line-height-heading: 1.3;
+}
