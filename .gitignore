@@ -27,3 +27,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# openspec init/update のたびに再生成される成果物(このリポジトリの管理対象外)
+# .claude/settings.json は手で管理するためコミット対象に残す
+.claude/skills/
+.claude/commands/

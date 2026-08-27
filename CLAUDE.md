@@ -60,6 +60,7 @@ OpenSpecのフェーズ進行は claude-harness-kit の `openspec-workflow` ス�
 
 - 実装・反映のフェーズで CLI生成の `openspec-apply-change` / `openspec-archive-change` / `openspec-sync-specs` を**直接起動しない**。これらは産出スキルへの委譲表もレビューゲートも持たないため、必ず `openspec-workflow` 経由にする(根拠: claude-harness-kit の `shared-rules/openspec-integration/openspec-rule.md`)。
 - `openspec-*`(グローバルスキル)と `/opsx:*`(例: `/opsx:propose`。このリポジトリのスラッシュコマンド)は同一の内容を指す。どちらを使ってもよい。
+- `.claude/skills/` と `.claude/commands/` は `openspec init` / `openspec update` が再生成する成果物のため `.gitignore` 済み。クローン直後は存在しないので、`openspec update` を実行して生成する(`.claude/settings.json` は手で管理するためコミット対象)。
 - そもそもOpenSpecを使うかどうかの判断基準は `openspec-rule` §いつ OpenSpec の propose を使うか に従う(下記「タスクの進め方」手順4)。
 - 既存コードの後追いスペック化は避け、これから変更する部分だけを段階的にスペック化する方針。
 
