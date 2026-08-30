@@ -76,8 +76,8 @@ function findGenerateTileZoomPyramidCallByLayer(
   layer: string,
 ): GenerateTileZoomPyramidCallArgs | undefined {
   return generateTileZoomPyramidMock.mock.calls.find(
-    ([params]: [GenerateTileZoomPyramidCallArgs]) => params.layer === layer,
-  )?.[0];
+    (call) => (call[0] as GenerateTileZoomPyramidCallArgs).layer === layer,
+  )?.[0] as GenerateTileZoomPyramidCallArgs | undefined;
 }
 
 describe('writeExportFiles', () => {
