@@ -124,7 +124,7 @@ describe('writeTileMetadata', () => {
     expect(metadata).toMatchObject({ minZoom: 2 });
   });
 
-  test('リージョンタイルが1件のみのレイヤーではmin/maxがその1件の座標と一致する', () => {
+  test('リージョンタイルが1件のみのレイヤーだったらmin/maxがその1件の座標と一致する', () => {
     // Arrange
     const layerRegionTiles: Record<string, RegionTileInput[]> = {
       topo: [buildRegionTile(7, -3)],

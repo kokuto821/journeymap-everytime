@@ -1,12 +1,13 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import type { RegionTileInput } from './tileZoomPyramid.ts';
+import type { Layer } from '../domain/exportTargetPolicy.ts';
 
 const TILE_SIZE = 512;
 const METADATA_FILE_NAME = 'metadata.json';
 
 export type WriteTileMetadataParams = {
-  layerRegionTiles: Record<string, RegionTileInput[]>;
+  layerRegionTiles: Partial<Record<Layer, RegionTileInput[]>>;
   zMax: number;
   minZoom: number;
   outputRootDir: string;
@@ -39,8 +40,8 @@ function computeCoordinateRange(regionTiles: RegionTileInput[]): LayerCoordinate
  * レイヤーごとのリージョンタイル座標一覧から、レイヤーごとの座標範囲一覧を組み立てる。
  */
 function buildLayerRanges(
-  layerRegionTiles: Record<string, RegionTileInput[]>,
-): Record<string, LayerCoordinateRange> {
+  layerRegionTiles: Partial<Record<Layer, RegionTileInput[]>>,
+): Partial<Record<Layer, LayerCoordinateRange>> {
   return Object.fromEntries(
     Object.entries(layerRegionTiles).map(([layer, regionTiles]) => [
       layer,

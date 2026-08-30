@@ -4,9 +4,28 @@
  * 判定する。fs/URL等の外部依存を持たない純粋関数。
  */
 
-const REGION_TILE_PATTERN = /^overworld\/(day|night|topo|biome)\/-?\d+,-?\d+\.png$/;
+/**
+ * JourneyMapが出力するレイヤー種別。エクスポート対象判定(`REGION_TILE_PATTERN`)と、
+ * リージョンタイルを実際に読み書きするインフラ層(`exportFileWriter.ts`・
+ * `tileMetadataWriter.ts`)の双方から参照される唯一の定義箇所。
+ */
+export const LAYERS = ['day', 'night', 'topo', 'biome'] as const;
 
-const WAYPOINT_DATA_PATTERN = /^waypoints\/WaypointData\.dat$/;
+/** `LAYERS`の要素を表すリテラル型。day/night/topo/biome以外の値を型レベルで排除する。 */
+export type Layer = (typeof LAYERS)[number];
+
+const REGION_TILE_PATTERN = new RegExp(`^overworld\\/(${LAYERS.join('|')})\\/-?\\d+,-?\\d+\\.png$`);
+
+/**
+ * JourneyMapが出力するwaypointデータファイルの相対パス。
+ * エクスポート対象判定(`WAYPOINT_DATA_PATTERN`)と、実際にこのファイルを読み込む
+ * インフラ層(`exportFileWriter.ts`)の双方から参照される唯一の定義箇所。
+ */
+export const WAYPOINT_DATA_RELATIVE_PATH = 'waypoints/WaypointData.dat';
+
+const WAYPOINT_DATA_PATTERN = new RegExp(
+  `^${WAYPOINT_DATA_RELATIVE_PATH.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`,
+);
 
 /**
  * @param relativePath `.minecraft/journeymap/data/sp/<world>/`を起点とした相対パス。

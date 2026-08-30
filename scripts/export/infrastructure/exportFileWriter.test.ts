@@ -61,7 +61,6 @@ vi.mock('node:fs', () => ({
   writeFileSync: vi.fn(),
 }));
 
-// Redフェーズ: exportFileWriter.tsはまだ存在しないため、このimportによりテストは失敗する。
 import { writeExportFiles } from './exportFileWriter.ts';
 
 const WORLD_ROOT_DIR = '/world';
@@ -206,9 +205,11 @@ describe('writeExportFiles', () => {
       layer === 'day' ? dayPromise : nightPromise,
     );
 
-    // Act
     // 非同期の解決タイミングを制御して順序を検証するテストのため、
     // 例外的に複数ステップ(2つのPromiseを段階的に解決)を1テストで行う。
+    // ステップごとにAct/Assertを都度ラベルし直す。
+
+    // Act (writeExportFilesを開始、まだ両レイヤーとも未解決)
     const resultPromise = writeExportFiles({
       relativePaths,
       worldRootDir: WORLD_ROOT_DIR,
@@ -218,16 +219,22 @@ describe('writeExportFiles', () => {
     await Promise.resolve();
     await Promise.resolve();
 
-    // Assert
+    // Assert (両レイヤーとも未解決の間はwriteTileMetadataが呼ばれない)
     expect(writeTileMetadataMock).not.toHaveBeenCalled();
 
+    // Act (dayのみ解決)
     resolveDay?.({ minZoom: 1 });
     await Promise.resolve();
     await Promise.resolve();
+
+    // Assert (dayのみ解決した時点ではまだwriteTileMetadataが呼ばれない)
     expect(writeTileMetadataMock).not.toHaveBeenCalled();
 
+    // Act (nightも解決)
     resolveNight?.({ minZoom: 1 });
     await resultPromise;
+
+    // Assert (全レイヤー解決後にwriteTileMetadataが呼ばれる)
     expect(writeTileMetadataMock).toHaveBeenCalledTimes(1);
   });
 
@@ -280,15 +287,16 @@ describe('writeExportFiles', () => {
     const error = new Error('tile pyramid failure');
     generateTileZoomPyramidMock.mockRejectedValue(error);
 
-    // Act & Assert
-    await expect(
-      writeExportFiles({
-        relativePaths,
-        worldRootDir: WORLD_ROOT_DIR,
-        outputRootDir: OUTPUT_ROOT_DIR,
-        zMax: Z_MAX,
-      }),
-    ).rejects.toThrow(error);
+    // Act
+    const act = writeExportFiles({
+      relativePaths,
+      worldRootDir: WORLD_ROOT_DIR,
+      outputRootDir: OUTPUT_ROOT_DIR,
+      zMax: Z_MAX,
+    });
+
+    // Assert
+    await expect(act).rejects.toThrow(error);
   });
 
   test('convertWaypointDataToJsonが例外を投げたら呼び出し元に伝播する', async () => {
@@ -300,14 +308,15 @@ describe('writeExportFiles', () => {
       throw error;
     });
 
-    // Act & Assert
-    await expect(
-      writeExportFiles({
-        relativePaths,
-        worldRootDir: WORLD_ROOT_DIR,
-        outputRootDir: OUTPUT_ROOT_DIR,
-        zMax: Z_MAX,
-      }),
-    ).rejects.toThrow(error);
+    // Act
+    const act = writeExportFiles({
+      relativePaths,
+      worldRootDir: WORLD_ROOT_DIR,
+      outputRootDir: OUTPUT_ROOT_DIR,
+      zMax: Z_MAX,
+    });
+
+    // Assert
+    await expect(act).rejects.toThrow(error);
   });
 });

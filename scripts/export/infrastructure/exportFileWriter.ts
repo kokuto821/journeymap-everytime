@@ -3,9 +3,8 @@ import * as path from 'node:path';
 import { generateTileZoomPyramid, type RegionTileInput } from './tileZoomPyramid.ts';
 import { convertWaypointDataToJson } from './waypointConverter.ts';
 import { writeTileMetadata } from './tileMetadataWriter.ts';
+import { LAYERS, WAYPOINT_DATA_RELATIVE_PATH, type Layer } from '../domain/exportTargetPolicy.ts';
 
-const LAYERS = ['day', 'night', 'topo', 'biome'] as const;
-const WAYPOINT_DATA_RELATIVE_PATH = 'waypoints/WaypointData.dat';
 const WAYPOINT_JSON_FILE_NAME = 'waypoints.json';
 
 export type WriteExportFilesParams = {
@@ -21,7 +20,7 @@ export type WriteExportFilesParams = {
  */
 function parseRegionTilePath(
   relativePath: string,
-  layer: string,
+  layer: Layer,
 ): { x: number; y: number } | undefined {
   const prefix = `overworld/${layer}/`;
   if (!relativePath.startsWith(prefix)) {
@@ -40,11 +39,15 @@ function parseRegionTilePath(
 /**
  * 相対パス一覧から、指定レイヤーに属するリージョンタイル一覧を組み立てる。
  */
-function buildRegionTiles(
-  relativePaths: string[],
-  worldRootDir: string,
-  layer: string,
-): RegionTileInput[] {
+function buildRegionTiles({
+  relativePaths,
+  worldRootDir,
+  layer,
+}: {
+  relativePaths: string[];
+  worldRootDir: string;
+  layer: Layer;
+}): RegionTileInput[] {
   const regionTiles: RegionTileInput[] = [];
 
   for (const relativePath of relativePaths) {
@@ -65,17 +68,21 @@ function buildRegionTiles(
 /**
  * waypoints/WaypointData.datが走査結果に含まれる場合のみ読み込み・変換して出力する。
  */
-function writeWaypointsIfPresent(
-  relativePaths: string[],
-  worldRootDir: string,
-  outputRootDir: string,
-): void {
+function writeWaypointsIfPresent({
+  relativePaths,
+  worldRootDir,
+  outputRootDir,
+}: {
+  relativePaths: string[];
+  worldRootDir: string;
+  outputRootDir: string;
+}): void {
   if (!relativePaths.includes(WAYPOINT_DATA_RELATIVE_PATH)) {
     return;
   }
 
   const waypointDataBuffer = fs.readFileSync(path.join(worldRootDir, WAYPOINT_DATA_RELATIVE_PATH));
-  const convertedWaypoints = convertWaypointDataToJson(waypointDataBuffer as Buffer);
+  const convertedWaypoints = convertWaypointDataToJson(waypointDataBuffer);
   fs.writeFileSync(
     path.join(outputRootDir, WAYPOINT_JSON_FILE_NAME),
     JSON.stringify(convertedWaypoints),
@@ -94,9 +101,9 @@ export async function writeExportFiles({
   outputRootDir,
   zMax,
 }: WriteExportFilesParams): Promise<void> {
-  const layerRegionTiles: Record<string, RegionTileInput[]> = {};
+  const layerRegionTiles: Partial<Record<Layer, RegionTileInput[]>> = {};
   for (const layer of LAYERS) {
-    const regionTiles = buildRegionTiles(relativePaths, worldRootDir, layer);
+    const regionTiles = buildRegionTiles({ relativePaths, worldRootDir, layer });
     if (regionTiles.length > 0) {
       layerRegionTiles[layer] = regionTiles;
     }
@@ -108,7 +115,7 @@ export async function writeExportFiles({
     ),
   );
 
-  writeWaypointsIfPresent(relativePaths, worldRootDir, outputRootDir);
+  writeWaypointsIfPresent({ relativePaths, worldRootDir, outputRootDir });
 
   const minZoom = Math.min(...pyramidResults.map((result) => result.minZoom));
   writeTileMetadata({ layerRegionTiles, zMax, minZoom, outputRootDir });

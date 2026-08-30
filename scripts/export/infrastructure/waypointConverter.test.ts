@@ -201,8 +201,11 @@ describe('convertWaypointDataToJson', () => {
       // Arrange
       const invalidBuffer = Buffer.from([0x01, 0x02, 0x03]);
 
-      // Act & Assert
-      expect(() => convertWaypointDataToJson(invalidBuffer)).toThrow();
+      // Act
+      const act = () => convertWaypointDataToJson(invalidBuffer);
+
+      // Assert
+      expect(act).toThrow();
     });
   });
 });

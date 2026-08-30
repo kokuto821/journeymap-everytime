@@ -44,7 +44,9 @@ function convertTagValue(tagType: string, value: unknown): unknown {
  * Compoundタグの中身(キーと`{type, value}`のRecord)を、
  * タグ型ラッパーを除去したプレーンオブジェクトに変換する。
  */
-function convertCompoundValue(compoundValue: Record<string, NbtTag | undefined>): unknown {
+function convertCompoundValue(
+  compoundValue: Record<string, NbtTag | undefined>,
+): Record<string, unknown> {
   const result: Record<string, unknown> = {};
 
   for (const [key, tag] of Object.entries(compoundValue)) {
@@ -66,7 +68,7 @@ function convertCompoundValue(compoundValue: Record<string, NbtTag | undefined>)
  * デコードできない不正なバイナリを渡した場合、`prismarine-nbt`がthrowする例外を
  * そのまま呼び出し元に伝播させる。
  */
-export function convertWaypointDataToJson(waypointDataBuffer: Buffer): unknown {
+export function convertWaypointDataToJson(waypointDataBuffer: Buffer): Record<string, unknown> {
   const parsed = nbt.parseUncompressed(waypointDataBuffer);
 
   return convertCompoundValue(parsed.value as Record<string, NbtTag | undefined>);

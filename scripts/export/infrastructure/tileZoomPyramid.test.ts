@@ -186,7 +186,7 @@ describe('generateTileZoomPyramid', () => {
   });
 
   describe('単一タイルのコピー', () => {
-    test('リージョンタイルが1枚のみならzMaxのタイルは無変換でコピーされる', async () => {
+    test('リージョンタイルが1枚のみだったらzMaxのタイルは無変換でコピーされる', async () => {
       // Arrange
       const zMax = 5;
       const layer = 'day';
@@ -292,7 +292,7 @@ describe('generateTileZoomPyramid', () => {
   });
 
   describe('不動点検出による停止', () => {
-    test('正負をまたぐ座標分布を入力すると不動点で再帰が停止し完了する', async () => {
+    test('正負をまたぐ座標分布を入力したら不動点で再帰が停止し完了する', async () => {
       // Arrange
       const zMax = 5;
       const layer = 'day';
@@ -347,7 +347,7 @@ describe('generateTileZoomPyramid', () => {
   });
 
   describe('戻り値のminZoom', () => {
-    test('リージョンタイルが1枚のみならminZoomがzMax-1になる', async () => {
+    test('リージョンタイルが1枚のみだったらminZoomがzMax-1になる', async () => {
       // Arrange: zMaxは不動点判定の対象外で必ず1段(zMax-1)は生成されるため、
       // 1枚のみの入力でもminZoomはzMax自体ではなくzMax-1になる想定。
       const zMax = 5;
@@ -361,7 +361,7 @@ describe('generateTileZoomPyramid', () => {
       expect(result.minZoom).toBe(zMax - 1);
     });
 
-    test('正負をまたぐ座標分布を入力すると不動点へ到達したズームレベルがminZoomになる', async () => {
+    test('正負をまたぐ座標分布を入力したら不動点へ到達したズームレベルがminZoomになる', async () => {
       // Arrange: 「不動点検出による停止」テストと同じ座標分布。
       // x座標のユニーク値集合はfloor(x/2)をzMax→zMax-1→zMax-2と2回適用した時点
       // ({-1, 0})で不動点に達するため、minZoomはzMax-2(=3)になる想定。
