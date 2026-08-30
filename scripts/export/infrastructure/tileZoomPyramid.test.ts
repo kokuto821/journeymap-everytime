@@ -346,6 +346,41 @@ describe('generateTileZoomPyramid', () => {
     });
   });
 
+  describe('戻り値のminZoom', () => {
+    test('リージョンタイルが1枚のみならminZoomがzMax-1になる', async () => {
+      // Arrange: zMaxは不動点判定の対象外で必ず1段(zMax-1)は生成されるため、
+      // 1枚のみの入力でもminZoomはzMax自体ではなくzMax-1になる想定。
+      const zMax = 5;
+      const layer = 'day';
+      const regionTiles = await arrangeRegionTiles(sourceDir, [{ x: 0, y: 0, color: RED }]);
+
+      // Act
+      const result = await generateTileZoomPyramid({ layer, zMax, regionTiles, outputRootDir });
+
+      // Assert
+      expect(result.minZoom).toBe(zMax - 1);
+    });
+
+    test('正負をまたぐ座標分布を入力すると不動点へ到達したズームレベルがminZoomになる', async () => {
+      // Arrange: 「不動点検出による停止」テストと同じ座標分布。
+      // x座標のユニーク値集合はfloor(x/2)をzMax→zMax-1→zMax-2と2回適用した時点
+      // ({-1, 0})で不動点に達するため、minZoomはzMax-2(=3)になる想定。
+      const zMax = 5;
+      const layer = 'day';
+      const xs = [-3, -1, 0, 2];
+      const regionTiles = await arrangeRegionTiles(
+        sourceDir,
+        xs.map((x) => ({ x, y: 0 })),
+      );
+
+      // Act
+      const result = await generateTileZoomPyramid({ layer, zMax, regionTiles, outputRootDir });
+
+      // Assert
+      expect(result.minZoom).toBe(zMax - 2);
+    });
+  });
+
   describe('出力パス形式', () => {
     test('リージョンタイルを入力したら出力ファイルパスがtiles/<layer>/<z>/<x>,<y>.png形式になる', async () => {
       // Arrange

@@ -232,7 +232,7 @@ export async function generateTileZoomPyramid({
   zMax,
   regionTiles,
   outputRootDir,
-}: GenerateTileZoomPyramidParams): Promise<void> {
+}: GenerateTileZoomPyramidParams): Promise<{ minZoom: number }> {
   let currentLevelTiles = copyAsNativeZoomLevel({ regionTiles, outputRootDir, layer, zMax });
   let currentZ = zMax;
 
@@ -251,4 +251,6 @@ export async function generateTileZoomPyramid({
     });
     currentZ = nextZ;
   } while (!hasReachedFixedPoint(currentLevelTiles));
+
+  return { minZoom: currentZ };
 }
