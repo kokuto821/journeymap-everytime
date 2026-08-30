@@ -14,7 +14,7 @@ export const LAYERS = ['day', 'night', 'topo', 'biome'] as const;
 /** `LAYERS`の要素を表すリテラル型。day/night/topo/biome以外の値を型レベルで排除する。 */
 export type Layer = (typeof LAYERS)[number];
 
-const REGION_TILE_PATTERN = new RegExp(`^overworld\\/(${LAYERS.join('|')})\\/-?\\d+,-?\\d+\\.png$`);
+const REGION_TILE_PATTERN = new RegExp(`^overworld/(${LAYERS.join('|')})/-?\\d+,-?\\d+\\.png$`);
 
 /**
  * JourneyMapが出力するwaypointデータファイルの相対パス。
