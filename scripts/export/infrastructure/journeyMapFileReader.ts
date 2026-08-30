@@ -36,6 +36,10 @@ function listAllFiles(worldRootDir: string, currentDir: string): string[] {
  * `worldRootDir` からの相対パス(`/`区切りに正規化済み)の配列として返す。
  */
 export function readJourneyMapFiles(worldRootDir: string): string[] {
+  if (!fs.existsSync(worldRootDir) || !fs.statSync(worldRootDir).isDirectory()) {
+    throw new Error(`ワールドディレクトリが見つかりません: ${worldRootDir}`);
+  }
+
   return listAllFiles(worldRootDir, worldRootDir).filter((relativePath) =>
     isExportTarget(relativePath),
   );

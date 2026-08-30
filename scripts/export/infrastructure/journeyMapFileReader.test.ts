@@ -125,4 +125,17 @@ describe('readJourneyMapFiles', () => {
       expect(result).toEqual([]);
     });
   });
+
+  describe('異常系: ワールドディレクトリが存在しない', () => {
+    test('存在しないワールドディレクトリを渡したら明確なエラーメッセージで例外を投げる', () => {
+      // Arrange
+      const nonExistentWorldDir = path.join(worldDir, 'not-exist-world');
+
+      // Act
+      const act = () => readJourneyMapFiles(nonExistentWorldDir);
+
+      // Assert
+      expect(act).toThrowError(`ワールドディレクトリが見つかりません: ${nonExistentWorldDir}`);
+    });
+  });
 });
