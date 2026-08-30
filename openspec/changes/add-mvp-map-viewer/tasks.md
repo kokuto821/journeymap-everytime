@@ -8,7 +8,7 @@
 - [x] 2.1 Node.jsスクリプトのプロジェクト構成を作成する(実行はローカルPC、CI/CDには組み込まない)
 - [x] 2.2 `.minecraft/journeymap/data`配下のOverworld day/night/topo/waypoints/biomeを走査する処理を実装する
 - [x] 2.3 chunk_cacheディレクトリを走査・変換・出力の対象から除外する(allowlist方式)
-- [ ] 2.4 タイル画像・waypoint JSON・biomeデータをWeb配信用構造に変換して出力する処理を実装する
+- [x] 2.4 タイル画像・waypoint JSON・biomeデータをWeb配信用構造に変換して出力する処理を実装する
 - [ ] 2.5 ローカルデータ不在・フォーマット不整合時にエラーで停止する処理を実装する
 - [ ] 2.6 実データでエクスポートスクリプトを実行し、出力構造を確認する
 
