@@ -99,6 +99,50 @@ function writeWaypointsIfPresent({
   );
 }
 
+type BuildLayerRegionTilesParams = {
+  relativePaths: string[];
+  worldRootDir: string;
+};
+
+/**
+ * 相対パス一覧から、対象ファイルが存在するレイヤーのみを持つレイヤー別リージョンタイル一覧を組み立てる。
+ */
+function buildLayerRegionTiles({
+  relativePaths,
+  worldRootDir,
+}: BuildLayerRegionTilesParams): Partial<Record<Layer, RegionTileInput[]>> {
+  const layerRegionTiles: Partial<Record<Layer, RegionTileInput[]>> = {};
+  for (const layer of LAYERS) {
+    const regionTiles = buildRegionTiles({ relativePaths, worldRootDir, layer });
+    if (regionTiles.length > 0) {
+      layerRegionTiles[layer] = regionTiles;
+    }
+  }
+  return layerRegionTiles;
+}
+
+type GenerateLayerTileZoomPyramidsParams = {
+  layerRegionTiles: Partial<Record<Layer, RegionTileInput[]>>;
+  zMax: number;
+  outputRootDir: string;
+};
+
+/**
+ * レイヤーごとのリージョンタイル一覧からtileZoomPyramid.generateTileZoomPyramidを並行実行し、
+ * 全レイヤー分の結果が揃うまで待つ。
+ */
+function generateLayerTileZoomPyramids({
+  layerRegionTiles,
+  zMax,
+  outputRootDir,
+}: GenerateLayerTileZoomPyramidsParams) {
+  return Promise.all(
+    Object.entries(layerRegionTiles).map(([layer, regionTiles]) =>
+      generateTileZoomPyramid({ layer, zMax, regionTiles, outputRootDir }),
+    ),
+  );
+}
+
 /**
  * journeyMapFileReader.readJourneyMapFilesが返す相対パス一覧を受け取り、
  * day/night/topo/biomeの各レイヤーをtileZoomPyramid.generateTileZoomPyramidへ、
@@ -111,19 +155,13 @@ export async function writeExportFiles({
   outputRootDir,
   zMax,
 }: WriteExportFilesParams): Promise<void> {
-  const layerRegionTiles: Partial<Record<Layer, RegionTileInput[]>> = {};
-  for (const layer of LAYERS) {
-    const regionTiles = buildRegionTiles({ relativePaths, worldRootDir, layer });
-    if (regionTiles.length > 0) {
-      layerRegionTiles[layer] = regionTiles;
-    }
-  }
+  const layerRegionTiles = buildLayerRegionTiles({ relativePaths, worldRootDir });
 
-  const pyramidResults = await Promise.all(
-    Object.entries(layerRegionTiles).map(([layer, regionTiles]) =>
-      generateTileZoomPyramid({ layer, zMax, regionTiles, outputRootDir }),
-    ),
-  );
+  const pyramidResults = await generateLayerTileZoomPyramids({
+    layerRegionTiles,
+    zMax,
+    outputRootDir,
+  });
 
   writeWaypointsIfPresent({ relativePaths, worldRootDir, outputRootDir });
 
