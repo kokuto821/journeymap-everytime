@@ -11,7 +11,7 @@ import { convertWaypointDataToJson } from '../waypointConverter.ts';
 // 実データファイルは使わず、prismarine-nbtのエンコード機能でテスト用NBTバイナリを
 // その場で組み立て、変換関数でデコード→JSON化させて検証する「往復テスト」方式で行う。
 // prismarine-nbtの中間表現(`{type, value}`のタグ型ラッパー)を含まない、
-// 素のキー・値だけのプレーンオブジェクトになることをtoEqualで厳密に検証する。
+// 素のキー・値だけのプレーンオブジェクトになることをtoStrictEqualで厳密に検証する。
 //
 // long型(64bit整数)はNumberでは精度を失うため文字列化する方針、
 // 配列型タグ(byte-array/int-array/long-array)は通常のJS配列(number[])として
@@ -42,7 +42,7 @@ describe('convertWaypointDataToJson', () => {
       const result = convertWaypointDataToJson(waypointDataBuffer);
 
       // Assert
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         name: '拠点',
         count: 42,
       });
@@ -72,7 +72,7 @@ describe('convertWaypointDataToJson', () => {
       const result = convertWaypointDataToJson(waypointDataBuffer);
 
       // Assert
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         waypoints: {
           groups: {
             journeymap_default: {
@@ -106,7 +106,7 @@ describe('convertWaypointDataToJson', () => {
       const result = convertWaypointDataToJson(waypointDataBuffer);
 
       // Assert
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         waypointList: [
           { icon: 'icon-a', opacity: 1 },
           { icon: 'icon-b', opacity: 0.5 },
@@ -129,7 +129,7 @@ describe('convertWaypointDataToJson', () => {
       const result = convertWaypointDataToJson(waypointDataBuffer);
 
       // Assert
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         createdAt: '9223372036854775807',
       });
     });
@@ -148,7 +148,7 @@ describe('convertWaypointDataToJson', () => {
       const result = convertWaypointDataToJson(waypointDataBuffer);
 
       // Assert
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         colorValues: [1, -2, 2147483647],
       });
     });
@@ -168,7 +168,7 @@ describe('convertWaypointDataToJson', () => {
       const result = convertWaypointDataToJson(waypointDataBuffer);
 
       // Assert
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         japaneseName: '拠点：日本語の目印',
         emptyName: '',
       });
@@ -189,7 +189,7 @@ describe('convertWaypointDataToJson', () => {
       const result = convertWaypointDataToJson(waypointDataBuffer);
 
       // Assert
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         emptyGroup: {},
         emptyList: [],
       });
