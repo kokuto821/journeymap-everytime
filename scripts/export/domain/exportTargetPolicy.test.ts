@@ -8,33 +8,14 @@ import { isExportTarget } from './exportTargetPolicy.ts';
 // waypoints/...)のパスのみを渡す前提とする。
 describe('isExportTarget', () => {
   describe('正常系: 対象と判定されるパス', () => {
-    test('day配下のリージョンpngファイルを渡したら対象と判定する', () => {
+    test.each([
+      { relativePath: 'overworld/day/-4,3.png' },
+      { relativePath: 'overworld/night/-4,3.png' },
+      { relativePath: 'overworld/topo/-4,3.png' },
+      { relativePath: 'overworld/biome/-4,3.png' },
+    ])('$relativePathを渡したら対象と判定する', ({ relativePath }) => {
       // Act
-      const result = isExportTarget('overworld/day/-4,3.png');
-
-      // Assert
-      expect(result).toBe(true);
-    });
-
-    test('night配下のリージョンpngファイルを渡したら対象と判定する', () => {
-      // Act
-      const result = isExportTarget('overworld/night/-4,3.png');
-
-      // Assert
-      expect(result).toBe(true);
-    });
-
-    test('topo配下のリージョンpngファイルを渡したら対象と判定する', () => {
-      // Act
-      const result = isExportTarget('overworld/topo/-4,3.png');
-
-      // Assert
-      expect(result).toBe(true);
-    });
-
-    test('biome配下のリージョンpngファイルを渡したら対象と判定する', () => {
-      // Act
-      const result = isExportTarget('overworld/biome/-4,3.png');
+      const result = isExportTarget(relativePath);
 
       // Assert
       expect(result).toBe(true);
