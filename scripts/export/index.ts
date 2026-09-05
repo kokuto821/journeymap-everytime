@@ -1,7 +1,7 @@
 import 'dotenv/config';
-import * as path from 'node:path';
 import { readJourneyMapFiles } from './infrastructure/journeyMapFileReader.ts';
 import { writeExportFiles } from './infrastructure/exportFileWriter.ts';
+import { EXPORT_OUTPUT_ROOT_DIR } from '../shared/outputRootDir.ts';
 
 // F-004 エクスポートスクリプトのエントリファイル。
 // journeyMapFileReader(走査)とexportFileWriter(タイル変換・waypoint変換・メタデータ出力)を
@@ -9,7 +9,6 @@ import { writeExportFiles } from './infrastructure/exportFileWriter.ts';
 
 // 出力先ディレクトリ(カレントディレクトリ=リポジトリルートからの相対パス)。
 // .gitignoreで`scripts/export/output/`として除外済み。
-const OUTPUT_ROOT_DIR = path.join('scripts', 'export', 'output');
 
 // タイルズームピラミッドの最大ズームレベル。
 // design.mdには具体的な数値の記載が無いため、Web地図の一般的な最大ズームレベルに近い値として
@@ -42,7 +41,7 @@ async function main(): Promise<void> {
   await writeExportFiles({
     relativePaths,
     worldRootDir,
-    outputRootDir: OUTPUT_ROOT_DIR,
+    outputRootDir: EXPORT_OUTPUT_ROOT_DIR,
     zMax: Z_MAX,
   });
 

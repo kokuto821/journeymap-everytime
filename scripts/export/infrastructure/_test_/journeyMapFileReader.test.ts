@@ -2,7 +2,8 @@ import * as fs from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
 import { afterEach, beforeEach, describe, expect, test } from 'vitest';
-import { readJourneyMapFiles, toPosixPath } from '../journeyMapFileReader.ts';
+import { readJourneyMapFiles } from '../journeyMapFileReader.ts';
+import { createFile } from '../../../_test_/fsTestHelpers.ts';
 
 // readJourneyMapFiles(worldRootDir: string): string[]
 // ワールドセーブのローカルディレクトリ(実ファイルシステム)を再帰的に走査し、
@@ -13,16 +14,6 @@ import { readJourneyMapFiles, toPosixPath } from '../journeyMapFileReader.ts';
 // 対象/対象外の分類ルール自体の網羅的な検証は exportTargetPolicy.test.ts で行う。
 // ここでは「実ディレクトリを再帰走査し、isExportTarget の判定結果に従って相対パスを返す」
 // という走査層固有の関心事(代表ケースでの委譲確認・パス正規化・混在時の絞り込み)のみを検証する。
-
-/**
- * `worldDir` を起点に、`/`区切りの相対パスで空ファイルを1件作成する。
- * 親ディレクトリが無ければ再帰的に作成する。
- */
-function createFile(worldDir: string, relativePath: string): void {
-  const fullPath = path.join(worldDir, ...relativePath.split('/'));
-  fs.mkdirSync(path.dirname(fullPath), { recursive: true });
-  fs.writeFileSync(fullPath, '');
-}
 
 describe('readJourneyMapFiles', () => {
   let worldDir: string;
@@ -58,19 +49,6 @@ describe('readJourneyMapFiles', () => {
 
       // Assert
       expect(result).not.toContain('overworld/chunk_cache/1,2.png');
-    });
-  });
-
-  describe('走査層固有の関心事: パス正規化', () => {
-    test('バックスラッシュ区切りのパスを渡したら/区切りに変換する', () => {
-      // Arrange
-      const backslashSeparatedPath = 'overworld\\day\\-4,3.png';
-
-      // Act
-      const result = toPosixPath(backslashSeparatedPath);
-
-      // Assert
-      expect(result).toBe('overworld/day/-4,3.png');
     });
   });
 
