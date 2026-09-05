@@ -13,7 +13,8 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "preview": "vite preview",
-    "export:map-data": "tsx scripts/export/index.ts"
+    "export:map-data": "tsx scripts/export/index.ts",
+    "deploy:map-data": "tsx scripts/deploy/index.ts"
   },
   "dependencies": {
     "prismarine-nbt": "^2.8.0",
@@ -43,6 +44,7 @@
     "typescript": "~6.0.2",
     "typescript-eslint": "^8.65.0",
     "vite": "^8.2.0",
-    "vitest": "^4.1.11"
+    "vitest": "^4.1.11",
+    "wrangler": "^4.129.0"
   }
 }
