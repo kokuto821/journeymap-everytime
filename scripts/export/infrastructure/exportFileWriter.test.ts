@@ -90,59 +90,56 @@ describe('writeExportFiles', () => {
     generateTileZoomPyramidMock.mockResolvedValue({ minZoom: 0 });
   });
 
-  test('day/night/topo/biomeの相対パスを渡したら各レイヤーごとに正しいregionTilesでgenerateTileZoomPyramidが呼ばれる', async () => {
-    // Arrange
-    const relativePaths = [
-      'overworld/day/-4,3.png',
-      'overworld/day/0,10.png',
-      'overworld/night/0,10.png',
-      'overworld/topo/12,-34.png',
-      'overworld/biome/-1,-1.png',
-    ];
-
-    // Act
-    await writeExportFiles({
-      relativePaths,
-      worldRootDir: WORLD_ROOT_DIR,
-      outputRootDir: OUTPUT_ROOT_DIR,
-      zMax: Z_MAX,
-    });
-
-    // Assert
-    expect(findGenerateTileZoomPyramidCallByLayer('day')).toEqual({
+  test.each([
+    {
       layer: 'day',
-      zMax: Z_MAX,
+      relativePaths: ['overworld/day/-4,3.png', 'overworld/day/0,10.png'],
       regionTiles: [
         { x: -4, y: 3, filePath: path.join(WORLD_ROOT_DIR, 'overworld/day/-4,3.png') },
         { x: 0, y: 10, filePath: path.join(WORLD_ROOT_DIR, 'overworld/day/0,10.png') },
       ],
-      outputRootDir: OUTPUT_ROOT_DIR,
-    });
-    expect(findGenerateTileZoomPyramidCallByLayer('night')).toEqual({
+    },
+    {
       layer: 'night',
-      zMax: Z_MAX,
+      relativePaths: ['overworld/night/0,10.png'],
       regionTiles: [
         { x: 0, y: 10, filePath: path.join(WORLD_ROOT_DIR, 'overworld/night/0,10.png') },
       ],
-      outputRootDir: OUTPUT_ROOT_DIR,
-    });
-    expect(findGenerateTileZoomPyramidCallByLayer('topo')).toEqual({
+    },
+    {
       layer: 'topo',
-      zMax: Z_MAX,
+      relativePaths: ['overworld/topo/12,-34.png'],
       regionTiles: [
         { x: 12, y: -34, filePath: path.join(WORLD_ROOT_DIR, 'overworld/topo/12,-34.png') },
       ],
-      outputRootDir: OUTPUT_ROOT_DIR,
-    });
-    expect(findGenerateTileZoomPyramidCallByLayer('biome')).toEqual({
+    },
+    {
       layer: 'biome',
-      zMax: Z_MAX,
+      relativePaths: ['overworld/biome/-1,-1.png'],
       regionTiles: [
         { x: -1, y: -1, filePath: path.join(WORLD_ROOT_DIR, 'overworld/biome/-1,-1.png') },
       ],
-      outputRootDir: OUTPUT_ROOT_DIR,
-    });
-  });
+    },
+  ])(
+    '$layerの相対パスを渡したら$layerレイヤーの正しいregionTilesでgenerateTileZoomPyramidが呼ばれる',
+    async ({ layer, relativePaths, regionTiles }) => {
+      // Act
+      await writeExportFiles({
+        relativePaths,
+        worldRootDir: WORLD_ROOT_DIR,
+        outputRootDir: OUTPUT_ROOT_DIR,
+        zMax: Z_MAX,
+      });
+
+      // Assert
+      expect(findGenerateTileZoomPyramidCallByLayer(layer)).toEqual({
+        layer,
+        zMax: Z_MAX,
+        regionTiles,
+        outputRootDir: OUTPUT_ROOT_DIR,
+      });
+    },
+  );
 
   test('waypoints/WaypointData.datを含めたらファイルが読み込まれconvertWaypointDataToJsonの変換結果がJSONファイルとして出力される', async () => {
     // Arrange
@@ -190,51 +187,56 @@ describe('writeExportFiles', () => {
     expect(fs.writeFileSync).not.toHaveBeenCalled();
   });
 
+  test.each([
+    { resolvedLayer: 'day', pendingLayer: 'night' },
+    { resolvedLayer: 'night', pendingLayer: 'day' },
+  ])(
+    '$resolvedLayerのみ解決し$pendingLayerが未解決の間はwriteTileMetadataが呼ばれない',
+    async ({ resolvedLayer }) => {
+      // Arrange
+      const relativePaths = ['overworld/day/0,0.png', 'overworld/night/0,0.png'];
+      const resolvers: Record<string, (value: { minZoom: number }) => void> = {};
+      const promises: Record<string, Promise<{ minZoom: number }>> = {
+        day: new Promise((resolve) => {
+          resolvers.day = resolve;
+        }),
+        night: new Promise((resolve) => {
+          resolvers.night = resolve;
+        }),
+      };
+      generateTileZoomPyramidMock.mockImplementation(
+        ({ layer }: GenerateTileZoomPyramidCallArgs) => promises[layer],
+      );
+
+      // Act
+      void writeExportFiles({
+        relativePaths,
+        worldRootDir: WORLD_ROOT_DIR,
+        outputRootDir: OUTPUT_ROOT_DIR,
+        zMax: Z_MAX,
+      });
+      resolvers[resolvedLayer]({ minZoom: 1 });
+      await Promise.resolve();
+      await Promise.resolve();
+
+      // Assert
+      expect(writeTileMetadataMock).not.toHaveBeenCalled();
+    },
+  );
+
   test('全レイヤーのgenerateTileZoomPyramidが解決してからwriteTileMetadataが呼ばれる', async () => {
     // Arrange
     const relativePaths = ['overworld/day/0,0.png', 'overworld/night/0,0.png'];
-    let resolveDay: ((value: { minZoom: number }) => void) | undefined;
-    let resolveNight: ((value: { minZoom: number }) => void) | undefined;
-    const dayPromise = new Promise<{ minZoom: number }>((resolve) => {
-      resolveDay = resolve;
-    });
-    const nightPromise = new Promise<{ minZoom: number }>((resolve) => {
-      resolveNight = resolve;
-    });
-    generateTileZoomPyramidMock.mockImplementation(({ layer }: GenerateTileZoomPyramidCallArgs) =>
-      layer === 'day' ? dayPromise : nightPromise,
-    );
 
-    // 非同期の解決タイミングを制御して順序を検証するテストのため、
-    // 例外的に複数ステップ(2つのPromiseを段階的に解決)を1テストで行う。
-    // ステップごとにAct/Assertを都度ラベルし直す。
-
-    // Act (writeExportFilesを開始、まだ両レイヤーとも未解決)
-    const resultPromise = writeExportFiles({
+    // Act
+    await writeExportFiles({
       relativePaths,
       worldRootDir: WORLD_ROOT_DIR,
       outputRootDir: OUTPUT_ROOT_DIR,
       zMax: Z_MAX,
     });
-    await Promise.resolve();
-    await Promise.resolve();
 
-    // Assert (両レイヤーとも未解決の間はwriteTileMetadataが呼ばれない)
-    expect(writeTileMetadataMock).not.toHaveBeenCalled();
-
-    // Act (dayのみ解決)
-    resolveDay?.({ minZoom: 1 });
-    await Promise.resolve();
-    await Promise.resolve();
-
-    // Assert (dayのみ解決した時点ではまだwriteTileMetadataが呼ばれない)
-    expect(writeTileMetadataMock).not.toHaveBeenCalled();
-
-    // Act (nightも解決)
-    resolveNight?.({ minZoom: 1 });
-    await resultPromise;
-
-    // Assert (全レイヤー解決後にwriteTileMetadataが呼ばれる)
+    // Assert
     expect(writeTileMetadataMock).toHaveBeenCalledTimes(1);
   });
 
