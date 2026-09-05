@@ -23,6 +23,7 @@
 - [ ] 4.1 react-leafletおよび関連依存をインストールする
 - [ ] 4.2 地図ビュー画面(S-01)のルーティング・レイアウトを作成する
 - [ ] 4.3 R2上のタイルURLをLeafletの`L.tileLayer`に接続し、初期レイヤー(昼)のタイルを表示する
+- [ ] 4.4 `terra-draw`・`terra-draw-leaflet-adapter`をインストールし、Leaflet地図インスタンスに最小構成で組み込む(描画モードは有効化しない)
 
 ## 5. レイヤー切替・座標表示(map-viewer)
 

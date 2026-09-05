@@ -12,6 +12,8 @@
 - waypointのUI表示(v1.1)・地図編集(v2)の設計は対象外
 - JourneyMapタイルの座標系・命名規則がLeaflet標準と厳密に一致するかの検証手順の詳細化(要件定義書13.2 Q-2、実装着手時に別途検証)
 - 認証機構の設計(要件定義書の方針により導入しない)
+- タイル配信方式の変更・MLT(MapLibre Tiles)によるベクタータイル化は対象外。既存のラスター(XYZ PNG)方式を維持する(issue #29)
+- TerraDrawの描画モード有効化・描画UI・waypoint機能との統合はv1.1以降のスコープ。本変更ではライブラリ導入と地図インスタンスへの組み込みまでとする(issue #29)
 
 ## Decisions
 
@@ -23,6 +25,15 @@
 - R2バケットをCloudflare Pages/Workers経由、またはR2の公開URL経由でLeafletの`L.tileLayer`のURLテンプレートに直接指定する
 - バックエンドを介した動的配信は行わない(要件定義書10章の「専用バックエンドは持たない」方針に合致)
 - レイヤー切替はday/night/topoでURLテンプレートのパスを切り替える方式とする
+
+### 地図操作: TerraDraw導入(issue #29)
+
+- 地図のパン・ズームは引き続きLeaflet標準の操作(react-leaflet、上記フロントエンド決定は変更なし)に任せる
+- 将来のwaypoint表示・編集(v1.1)や、地図操作を将来別のライブラリへ切り替える際のコスト低減を見据え、この段階で`terra-draw` + `terra-draw-leaflet-adapter`を導入し、Leafletの地図インスタンスに最小構成で組み込む
+- **本変更のスコープ**: ライブラリのインストールとアダプターの組み込みまでとする。ポイント/ライン/ポリゴン等の描画モードの有効化、描画UI・waypoint機能の実装は行わない(v1.1以降、YAGNI)
+- **検討の経緯**: 当初はLeaflet→MapLibre GL JSへの全面移行を検討したが、MapLibre GL JSはWeb Mercator(EPSG:3857)投影に固定されており、LeafletのCRS.Simple(下記「JourneyMapタイル構造とWeb標準(XYZ)の互換性」で採用している、JourneyMapの符号付き非地理座標をそのまま扱う仕組み)に相当する機能を持たないことが判明した([MapLibre Roadmap: Non-Mercator Projection](https://maplibre.org/roadmap/maplibre-gl-js/non-mercator-projection/)、[maplibre-gl-js Issue #1228](https://github.com/maplibre/maplibre-gl-js/issues/1228)でも「ゲームのワールドマップのような平面地図はLeafletのSimple CRSでは可能だが、MapBox/MapLibreでは現時点で不可能」とissueの投稿者が指摘している)。回避には座標の疑似投影・タイルURLのオフセット変換(`transformRequest`)等の自前実装が必要になり、個人開発MVPのリスク・工数に見合わないため不採用とした
+- **代替案**: MapLibre GL JS + TerraDrawへの全面移行 → 上記の理由で不採用。TerraDrawはMapLibre GL JS・Leaflet双方に公式アダプター(`terra-draw-maplibre-gl-adapter`/`terra-draw-leaflet-adapter`)を持つため、この不採用判断は「地図操作の切り替えコスト低減」という目的自体を損なわない。TerraDraw導入をv1.1着手時まで見送る案 → 切り替えコスト低減を優先し、本変更で導入する方針を採用
+- **未確定事項**: 実際の描画モード有効化・waypoint編集UIとの統合方式は、v1.1のissueで別途設計する
 
 ### エクスポート/デプロイスクリプト: Node.jsスクリプト + Wrangler CLI
 - JourneyMapのローカルデータ(`.minecraft/journeymap/data`)読み取り・変換はNode.jsスクリプトで実装し、リポジトリ内にスクリプトとして持つ(実行はローカルPC上、CI/CDには組み込まない)
@@ -88,7 +99,7 @@
 
 | 機能 | 実行環境 | ドメイン層 | インフラ層 | UI層/CLIエントリ |
 |---|---|---|---|---|
-| F-001 タイル地図表示 | フロント | `LayerType`(day/night/topo)、`Dimension`(overworld) | `r2TileUrlProvider`(LayerType→R2タイルURLテンプレート) | `MapView.tsx`、`useTileLayerUrl` |
+| F-001 タイル地図表示 | フロント | `LayerType`(day/night/topo)、`Dimension`(overworld) | `r2TileUrlProvider`(LayerType→R2タイルURLテンプレート) | `MapView.tsx`(TerraDraw+`terra-draw-leaflet-adapter`の組み込みを含む)、`useTileLayerUrl` |
 | F-002 レイヤー切替 | フロント | `LayerType`妥当性判定 | (F-001の`r2TileUrlProvider`を再利用) | `LayerSwitcher.tsx`、`useTileLayerUrl` |
 | F-003 座標表示・コピー | フロント | `WorldCoordinate`(値オブジェクト)、`convertLatLngToWorldCoordinate` | `clipboardWriter`(`navigator.clipboard`ラッパー) | `CoordinatePanel.tsx`、`useMapCoordinate` |
 | F-004 エクスポートスクリプト | Node.js CLI | `exportTargetPolicy`(allowlist方式、chunk_cache除外)、`Tile`/`Waypoint`形状定義 | `journeyMapFileReader`、`exportFileWriter` | `scripts/export/index.ts` |
@@ -169,7 +180,7 @@ TopAppBar(画面上部)とBottomNavBar(画面下部)の2要素で構成する。
 └───────────────────────────────┘
 ```
 
-**スコープ外の明記**: 本決定はレイアウト方針であり、実装(react-leaflet導入、コンポーネント実装、CSS変数実装)はtasks.md 4・5番で別途行う。tasks.mdへのタスク追加は本変更では行わない
+**スコープ外の明記**: 本決定はレイアウト方針であり、実装(react-leaflet・TerraDraw導入、コンポーネント実装、CSS変数実装)はtasks.md 4・5番で別途行う。tasks.mdへのタスク追加は本変更では行わない
 
 ### JourneyMapタイル構造とWeb標準(XYZ)の互換性(issue #16、実データ検証済み)
 
