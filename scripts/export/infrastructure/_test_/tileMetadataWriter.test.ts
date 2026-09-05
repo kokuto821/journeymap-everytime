@@ -2,8 +2,8 @@ import * as fs from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
 import { afterEach, beforeEach, describe, expect, test } from 'vitest';
-import { writeTileMetadata } from './tileMetadataWriter.ts';
-import type { RegionTileInput } from './tileZoomPyramid.ts';
+import { writeTileMetadata } from '../tileMetadataWriter.ts';
+import type { RegionTileInput } from '../tileZoomPyramid.ts';
 
 // writeTileMetadata(params: {
 //   layerRegionTiles: Record<string, RegionTileInput[]>;

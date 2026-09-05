@@ -3,7 +3,7 @@ import * as os from 'node:os';
 import * as path from 'node:path';
 import sharp from 'sharp';
 import { afterEach, beforeEach, describe, expect, test } from 'vitest';
-import { generateTileZoomPyramid, type RegionTileInput } from './tileZoomPyramid.ts';
+import { generateTileZoomPyramid, type RegionTileInput } from '../tileZoomPyramid.ts';
 
 // generateTileZoomPyramid(params: {
 //   layer: string;

@@ -44,15 +44,15 @@ const { generateTileZoomPyramidMock, convertWaypointDataToJsonMock, writeTileMet
     writeTileMetadataMock: vi.fn(),
   }));
 
-vi.mock('./tileZoomPyramid.ts', () => ({
+vi.mock('../tileZoomPyramid.ts', () => ({
   generateTileZoomPyramid: generateTileZoomPyramidMock,
 }));
 
-vi.mock('./waypointConverter.ts', () => ({
+vi.mock('../waypointConverter.ts', () => ({
   convertWaypointDataToJson: convertWaypointDataToJsonMock,
 }));
 
-vi.mock('./tileMetadataWriter.ts', () => ({
+vi.mock('../tileMetadataWriter.ts', () => ({
   writeTileMetadata: writeTileMetadataMock,
 }));
 
@@ -61,7 +61,7 @@ vi.mock('node:fs', () => ({
   writeFileSync: vi.fn(),
 }));
 
-import { writeExportFiles } from './exportFileWriter.ts';
+import { writeExportFiles } from '../exportFileWriter.ts';
 
 const WORLD_ROOT_DIR = '/world';
 const OUTPUT_ROOT_DIR = '/output';

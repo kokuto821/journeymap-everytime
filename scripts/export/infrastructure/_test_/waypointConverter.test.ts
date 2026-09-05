@@ -1,6 +1,6 @@
 import nbt from 'prismarine-nbt';
 import { describe, expect, test } from 'vitest';
-import { convertWaypointDataToJson } from './waypointConverter.ts';
+import { convertWaypointDataToJson } from '../waypointConverter.ts';
 
 // convertWaypointDataToJson(waypointDataBuffer: Buffer): unknown
 //

@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { isExportTarget } from './exportTargetPolicy.ts';
+import { isExportTarget } from '../exportTargetPolicy.ts';
 
 // isExportTarget(relativePath: string): boolean
 // JourneyMapローカルデータの `.minecraft/journeymap/data/sp/<world>/` を起点とした
