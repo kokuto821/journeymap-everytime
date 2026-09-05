@@ -7,6 +7,9 @@ import { LAYERS, WAYPOINT_DATA_RELATIVE_PATH, type Layer } from '../domain/expor
 
 const WAYPOINT_JSON_FILE_NAME = 'waypoints.json';
 
+// リージョンタイル画像のファイル名(例: `-4,3.png`)からx,y座標を抽出するパターン
+const REGION_TILE_FILE_NAME_PATTERN = /^(-?\d+),(-?\d+)\.png$/;
+
 export type WriteExportFilesParams = {
   relativePaths: string[];
   worldRootDir: string;
@@ -14,27 +17,38 @@ export type WriteExportFilesParams = {
   zMax: number;
 };
 
+type RegionCoordinate = { x: number; y: number };
+
 /**
- * `overworld/<layer>/<x>,<y>.png`形式の相対パスから座標を抽出する。
+ * `overworld/<layer>/<x>,<y>.png`形式の相対パスからregion座標を抽出する。
  * 一致しない相対パスは`undefined`を返す。
  */
 function parseRegionTilePath(
   relativePath: string,
   layer: Layer,
-): { x: number; y: number } | undefined {
+): RegionCoordinate | undefined {
   const prefix = `overworld/${layer}/`;
   if (!relativePath.startsWith(prefix)) {
     return undefined;
   }
 
   const fileName = relativePath.slice(prefix.length);
-  const match = /^(-?\d+),(-?\d+)\.png$/.exec(fileName);
-  if (!match) {
+  const regionTileFileNameMatch = REGION_TILE_FILE_NAME_PATTERN.exec(fileName);
+  if (!regionTileFileNameMatch) {
     return undefined;
   }
 
-  return { x: Number(match[1]), y: Number(match[2]) };
+  return {
+    x: Number(regionTileFileNameMatch[1]),
+    y: Number(regionTileFileNameMatch[2]),
+  };
 }
+
+type BuildRegionTilesParams = {
+  relativePaths: string[];
+  worldRootDir: string;
+  layer: Layer;
+};
 
 /**
  * 相対パス一覧から、指定レイヤーに属するリージョンタイル一覧を組み立てる。
@@ -43,21 +57,17 @@ function buildRegionTiles({
   relativePaths,
   worldRootDir,
   layer,
-}: {
-  relativePaths: string[];
-  worldRootDir: string;
-  layer: Layer;
-}): RegionTileInput[] {
+}: BuildRegionTilesParams): RegionTileInput[] {
   const regionTiles: RegionTileInput[] = [];
 
   for (const relativePath of relativePaths) {
-    const coordinate = parseRegionTilePath(relativePath, layer);
-    if (!coordinate) {
+    const regionCoordinate = parseRegionTilePath(relativePath, layer);
+    if (!regionCoordinate) {
       continue;
     }
     regionTiles.push({
-      x: coordinate.x,
-      y: coordinate.y,
+      x: regionCoordinate.x,
+      y: regionCoordinate.y,
       filePath: path.join(worldRootDir, relativePath),
     });
   }
