@@ -17,6 +17,9 @@ dist-ssr
 .env.local
 .env.*.local
 
+# scripts/export/ (F-004) の実行結果(生成物のためリポジトリに含めない)
+scripts/export/output/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

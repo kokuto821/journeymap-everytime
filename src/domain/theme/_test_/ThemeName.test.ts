@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { DEFAULT_THEME_NAME, isThemeName, THEME_NAMES } from './ThemeName';
+import { DEFAULT_THEME_NAME, isThemeName, THEME_NAMES } from '../ThemeName';
 
 describe('ThemeName', () => {
   test('THEME_NAMESを参照したらシンプルとレトロの2種類が得られる', () => {
