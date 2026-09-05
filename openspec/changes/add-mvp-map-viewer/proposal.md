@@ -5,13 +5,14 @@
 ## What Changes
 
 - Overworldの地図タイル(昼/夜/地形の3レイヤー)をLeafletでパン・ズーム表示するWeb地図ビューア(単一画面 S-01)を新規構築する
+- 地図操作の基盤としてTerraDraw(`terra-draw` + `terra-draw-leaflet-adapter`)を導入する。将来のwaypoint描画・編集(v1.1)や地図操作ライブラリの切り替えコスト低減を見据えた土台であり、本変更では描画モードの有効化・UIは行わない(issue #29)
 - レイヤー切替UI(昼/夜/地形)を追加する
 - 地図クリック地点の座標表示・コピー機能を追加する
 - JourneyMapローカルデータ(`.minecraft/journeymap/data`)からday/night/topo/biome/waypointsタイル一式(約168MB)を読み取り、Web配信用構造に変換するエクスポートスクリプト(ローカル実行)を新規構築する。chunk_cache(945MB)は対象外とする
 - エクスポート済みデータをCloudflare R2へフルシンク(全量上書き)でアップロードするデプロイスクリプト(ローカル実行、Wrangler CLI等)を新規構築する
 - 認証機構は設けず、推測困難なURLのみで非公開運用する
 
-対象外(本変更に含めない): waypointのマーカー表示・検索・ジャンプ(v1.1)、地図編集機能(v2)、Cave/Nether/Endレイヤー、距離測定機能、CI/CDによる自動デプロイ
+対象外(本変更に含めない): waypointのマーカー表示・検索・ジャンプ(v1.1)、地図編集機能(v2)、Cave/Nether/Endレイヤー、距離測定機能、CI/CDによる自動デプロイ、TerraDrawの描画モード有効化・描画UI(v1.1)、MLT(MapLibre Tiles)によるベクタータイル化・地図描画ライブラリのMapLibre GL JSへの移行
 
 ## Capabilities
 
@@ -25,7 +26,7 @@
 
 ## Impact
 
-- 新規: フロントエンド(Leaflet/react-leaflet導入、地図表示コンポーネント一式)
+- 新規: フロントエンド(Leaflet/react-leaflet導入、地図表示コンポーネント一式、TerraDraw/`terra-draw-leaflet-adapter`導入)
 - 新規: ローカルPC上で実行するNode.js等のエクスポート/デプロイスクリプト(リポジトリ外の`.minecraft/journeymap/data`を読み取る)
 - 新規: Cloudflare Pages(フロント配信)・Cloudflare R2(タイルデータ約168MB格納)の設定
 - 影響なし: バックエンド・DBは持たない方針のため追加インフラなし
