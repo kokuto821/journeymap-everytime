@@ -41,7 +41,11 @@ export function MapView() {
   useEffect(() => {
     let cancelled = false;
 
-    fetchTileMetadata(getR2BaseUrl())
+    // getR2BaseUrl()の同期throwもfetchTileMetadata()の失敗も同じcatchで扱うため、
+    // baseUrlの取得自体もPromiseチェーンの中で行う。
+    Promise.resolve()
+      .then(() => getR2BaseUrl())
+      .then((baseUrl) => fetchTileMetadata(baseUrl))
       .then((metadata) => {
         if (!cancelled) {
           setState({ status: 'loaded', zMax: metadata.zMax, minZoom: metadata.minZoom });

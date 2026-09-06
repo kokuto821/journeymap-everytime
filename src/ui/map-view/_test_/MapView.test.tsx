@@ -59,4 +59,18 @@ describe('MapView', () => {
       expect(screen.getByRole('alert')).toHaveTextContent('地図データの読み込みに失敗しました');
     });
   });
+
+  test('VITE_R2_BASE_URLが未設定ならエラーメッセージを表示する', async () => {
+    // Arrange
+    vi.stubEnv('VITE_R2_BASE_URL', undefined);
+
+    // Act
+    render(<MapView />);
+
+    // Assert
+    await waitFor(() => {
+      expect(screen.getByRole('alert')).toHaveTextContent('地図データの読み込みに失敗しました');
+    });
+    expect(fetchTileMetadataMock).not.toHaveBeenCalled();
+  });
 });
