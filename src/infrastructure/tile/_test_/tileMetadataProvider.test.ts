@@ -47,7 +47,10 @@ describe('fetchTileMetadata', () => {
     // Arrange
     stubFetch({ ok: false, status: 404 });
 
-    // Act, Assert
-    await expect(fetchTileMetadata('https://example.com')).rejects.toThrow('404');
+    // Act
+    const act = () => fetchTileMetadata('https://example.com');
+
+    // Assert
+    await expect(act).rejects.toThrow('404');
   });
 });

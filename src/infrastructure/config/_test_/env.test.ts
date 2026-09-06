@@ -21,15 +21,21 @@ describe('getR2BaseUrl', () => {
     // Arrange
     vi.stubEnv('VITE_R2_BASE_URL', undefined);
 
-    // Act, Assert
-    expect(() => getR2BaseUrl()).toThrow('VITE_R2_BASE_URL');
+    // Act
+    const act = () => getR2BaseUrl();
+
+    // Assert
+    expect(act).toThrow('VITE_R2_BASE_URL');
   });
 
   test('VITE_R2_BASE_URLが空文字なら例外を投げる', () => {
     // Arrange
     vi.stubEnv('VITE_R2_BASE_URL', '');
 
-    // Act, Assert
-    expect(() => getR2BaseUrl()).toThrow('VITE_R2_BASE_URL');
+    // Act
+    const act = () => getR2BaseUrl();
+
+    // Assert
+    expect(act).toThrow('VITE_R2_BASE_URL');
   });
 });

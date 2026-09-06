@@ -6,24 +6,26 @@ import { fetchTileMetadata } from '../../infrastructure/tile/tileMetadataProvide
 import { createGameMapCrs } from './gameMapCrs';
 import { useTileLayerUrl } from './useTileLayerUrl';
 
-const TILE_SIZE = 512;
 // 未探索領域(タイル404)を空白表示にするための透明1x1px PNG(RGBA全て0)。エラー画面は出さない方針(design.md F-001節)。
 export const TRANSPARENT_TILE_URL =
   'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR4nGNgAAIAAAUAAXpeqz8AAAAASUVORK5CYII=';
 
 type MapMetadataState =
-  { status: 'loading' } | { status: 'loaded'; zMax: number; minZoom: number } | { status: 'error' };
+  | { status: 'loading' }
+  | { status: 'loaded'; zMax: number; minZoom: number; tileSize: number }
+  | { status: 'error' };
 
 type MapCanvasProps = {
   zMax: number;
   minZoom: number;
+  tileSize: number;
 };
 
 /**
  * metadata.json取得後に組み立てる地図本体。
  * CRSはzMax確定後でないと正しく組み立てられないため、MapView側でloaded後のみ描画する。
  */
-function MapCanvas({ zMax, minZoom }: MapCanvasProps) {
+function MapCanvas({ zMax, minZoom, tileSize }: MapCanvasProps) {
   const tileUrl = useTileLayerUrl('day');
   const crs = createGameMapCrs(zMax);
 
@@ -36,7 +38,7 @@ function MapCanvas({ zMax, minZoom }: MapCanvasProps) {
       minZoom={minZoom}
       maxZoom={zMax}
     >
-      <TileLayer url={tileUrl} tileSize={TILE_SIZE} noWrap errorTileUrl={TRANSPARENT_TILE_URL} />
+      <TileLayer url={tileUrl} tileSize={tileSize} noWrap errorTileUrl={TRANSPARENT_TILE_URL} />
     </MapContainer>
   );
 }
@@ -55,7 +57,12 @@ export function MapView() {
       .then((baseUrl) => fetchTileMetadata(baseUrl))
       .then((metadata) => {
         if (!cancelled) {
-          setState({ status: 'loaded', zMax: metadata.zMax, minZoom: metadata.minZoom });
+          setState({
+            status: 'loaded',
+            zMax: metadata.zMax,
+            minZoom: metadata.minZoom,
+            tileSize: metadata.tileSize,
+          });
         }
       })
       .catch(() => {
@@ -77,5 +84,5 @@ export function MapView() {
     return <p role="alert">地図データの読み込みに失敗しました</p>;
   }
 
-  return <MapCanvas zMax={state.zMax} minZoom={state.minZoom} />;
+  return <MapCanvas zMax={state.zMax} minZoom={state.minZoom} tileSize={state.tileSize} />;
 }

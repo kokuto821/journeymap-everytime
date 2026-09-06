@@ -1,4 +1,3 @@
-import { inflateSync } from 'node:zlib';
 import { render, screen, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, test, vi } from 'vitest';
 import { MapView, TRANSPARENT_TILE_URL } from '../MapView';
@@ -10,32 +9,68 @@ vi.mock('../../../infrastructure/tile/tileMetadataProvider', () => ({
 
 const fetchTileMetadataMock = vi.mocked(fetchTileMetadata);
 
-/** PNGのチャンク列からIDATチャンクのデータを取り出す。 */
-function extractPngIdat(buffer: Buffer): Buffer {
+function base64ToBytes(base64: string): Uint8Array {
+  const binary = atob(base64);
+  return Uint8Array.from(binary, (char) => char.charCodeAt(0));
+}
+
+type PngChunks = {
+  width: number;
+  height: number;
+  colorType: number;
+  idat: number[];
+};
+
+/** PNGのチャンク列からIHDR(幅・高さ・カラータイプ)とIDATを取り出す。 */
+function parsePng(bytes: Uint8Array): PngChunks {
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
   const PNG_SIGNATURE_LENGTH = 8;
   let offset = PNG_SIGNATURE_LENGTH;
-  while (offset < buffer.length) {
-    const length = buffer.readUInt32BE(offset);
-    const type = buffer.toString('ascii', offset + 4, offset + 8);
-    if (type === 'IDAT') {
-      return buffer.subarray(offset + 8, offset + 8 + length);
+  let ihdr: { width: number; height: number; colorType: number } | undefined;
+  let idat: number[] | undefined;
+
+  while (offset < bytes.length) {
+    const length = view.getUint32(offset);
+    const type = String.fromCharCode(...bytes.subarray(offset + 4, offset + 8));
+    const data = bytes.subarray(offset + 8, offset + 8 + length);
+
+    if (type === 'IHDR') {
+      ihdr = {
+        width: new DataView(data.buffer, data.byteOffset).getUint32(0),
+        height: new DataView(data.buffer, data.byteOffset).getUint32(4),
+        colorType: data[9],
+      };
     }
+    if (type === 'IDAT') {
+      idat = Array.from(data);
+    }
+
     offset += 12 + length;
   }
-  throw new Error('IDATチャンクが見つかりません');
+
+  if (!ihdr || !idat) {
+    throw new Error('IHDR/IDATチャンクが見つかりません');
+  }
+  return { ...ihdr, idat };
 }
 
 describe('TRANSPARENT_TILE_URL', () => {
   test('完全に透明な1x1pxのRGBA PNGである', () => {
     // Arrange
     const base64 = TRANSPARENT_TILE_URL.replace('data:image/png;base64,', '');
-    const idat = extractPngIdat(Buffer.from(base64, 'base64'));
 
     // Act
-    const rawScanline = inflateSync(idat);
+    const png = parsePng(base64ToBytes(base64));
 
     // Assert
-    expect(Array.from(rawScanline)).toStrictEqual([0, 0, 0, 0, 0]);
+    // colorType=6はPNG仕様上RGBA(アルファチャンネル有り)を表す。
+    // IDATは`filter=0, RGBA=(0,0,0,0)`(完全に透明)をzlib圧縮した既知のバイト列(圧縮方式に依存しないよう固定値で照合する)。
+    expect(png).toStrictEqual({
+      width: 1,
+      height: 1,
+      colorType: 6,
+      idat: [120, 156, 99, 96, 0, 2, 0, 0, 5, 0, 1],
+    });
   });
 });
 
@@ -73,6 +108,27 @@ describe('MapView', () => {
     // Assert
     await waitFor(() => {
       expect(document.querySelector('.leaflet-container')).toBeInTheDocument();
+    });
+  });
+
+  test('metadataのtileSizeがタイル画像のサイズに反映される(ハードコードしない)', async () => {
+    // Arrange
+    vi.stubEnv('VITE_R2_BASE_URL', 'https://example.com');
+    fetchTileMetadataMock.mockResolvedValue({
+      zMax: 5,
+      minZoom: 1,
+      tileSize: 256,
+      layers: {},
+    });
+
+    // Act
+    render(<MapView />);
+
+    // Assert
+    await waitFor(() => {
+      const tile = document.querySelector<HTMLElement>('.leaflet-tile');
+      expect(tile).not.toBeNull();
+      expect(tile).toHaveStyle({ width: '256px', height: '256px' });
     });
   });
 
