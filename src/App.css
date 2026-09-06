@@ -1,40 +1,23 @@
-/* 暫定シェルのスタイル。F-001で地図ビュー(S-01)に置き換える際にあわせて差し替える。 */
+/* F-001で地図ビュー(S-01)をフルブリード表示する。テーマ切替はS-01正式配置(#5/F-002)までの暫定オーバーレイ。 */
 .app-shell {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 100%;
-  padding: var(--space-m);
+  position: relative;
+  width: 100%;
+  height: 100vh;
 }
 
-.app-panel {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-s);
-  max-width: 32rem;
-  padding: var(--space-s);
-  border: var(--border-width) solid var(--outline);
-  border-radius: var(--radius);
-  background-color: var(--surface);
-  box-shadow: var(--shadow);
-  color: var(--on-surface);
-}
-
-.app-panel h1 {
-  font-size: var(--font-size-xl);
-}
-
-.app-panel p {
-  margin: 0;
-  color: var(--on-surface-variant);
-  font-size: var(--font-size-s);
+.map-view {
+  position: absolute;
+  inset: 0;
 }
 
 /* ピル形状のボタンバー。両テーマとも丸形状を維持する(design.mdの例外指定) */
 .theme-switch {
+  position: absolute;
+  top: var(--space-m);
+  right: var(--space-m);
+  z-index: 1000;
   display: flex;
   gap: var(--space-xs);
-  align-self: flex-start;
   padding: var(--space-2xs);
   border: var(--border-width) solid var(--outline);
   border-radius: var(--radius-pill);

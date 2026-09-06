@@ -16,6 +16,12 @@ npm install
 
 ## 開発サーバーの起動
 
+地図ビュー(F-001)の表示にはR2バケットの公開ベースURLが必要。`.env`(`.env.example`をコピーして作成)に設定する:
+
+```
+VITE_R2_BASE_URL=<R2バケットの公開ベースURL>
+```
+
 ```bash
 npm run dev
 ```
