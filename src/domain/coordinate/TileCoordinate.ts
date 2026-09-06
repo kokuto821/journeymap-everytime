@@ -18,14 +18,18 @@ type CreateTileCoordinateParams = {
   y: number;
 };
 
-const isNonNegativeInteger = (value: number): boolean => Number.isInteger(value) && value >= 0;
+const isValidZoom = (value: number): boolean => Number.isInteger(value) && value >= 0;
 
 /**
  * TileCoordinateを生成するファクトリ。
  * zoomは0以上の整数、x/yは整数であることを検証し、不正な値はErrorをthrowする。
  */
-export const createTileCoordinate = ({ zoom, x, y }: CreateTileCoordinateParams): TileCoordinate => {
-  if (!isNonNegativeInteger(zoom)) {
+export const createTileCoordinate = ({
+  zoom,
+  x,
+  y,
+}: CreateTileCoordinateParams): TileCoordinate => {
+  if (!isValidZoom(zoom)) {
     throw new Error(`zoomは0以上の整数である必要があります: ${zoom}`);
   }
   if (!Number.isInteger(x)) {
