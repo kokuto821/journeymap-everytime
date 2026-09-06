@@ -1,6 +1,7 @@
+import { inflateSync } from 'node:zlib';
 import { render, screen, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, test, vi } from 'vitest';
-import { MapView } from '../MapView';
+import { MapView, TRANSPARENT_TILE_URL } from '../MapView';
 import { fetchTileMetadata } from '../../../infrastructure/tile/tileMetadataProvider';
 
 vi.mock('../../../infrastructure/tile/tileMetadataProvider', () => ({
@@ -8,6 +9,35 @@ vi.mock('../../../infrastructure/tile/tileMetadataProvider', () => ({
 }));
 
 const fetchTileMetadataMock = vi.mocked(fetchTileMetadata);
+
+/** PNGのチャンク列からIDATチャンクのデータを取り出す。 */
+function extractPngIdat(buffer: Buffer): Buffer {
+  const PNG_SIGNATURE_LENGTH = 8;
+  let offset = PNG_SIGNATURE_LENGTH;
+  while (offset < buffer.length) {
+    const length = buffer.readUInt32BE(offset);
+    const type = buffer.toString('ascii', offset + 4, offset + 8);
+    if (type === 'IDAT') {
+      return buffer.subarray(offset + 8, offset + 8 + length);
+    }
+    offset += 12 + length;
+  }
+  throw new Error('IDATチャンクが見つかりません');
+}
+
+describe('TRANSPARENT_TILE_URL', () => {
+  test('完全に透明な1x1pxのRGBA PNGである', () => {
+    // Arrange
+    const base64 = TRANSPARENT_TILE_URL.replace('data:image/png;base64,', '');
+    const idat = extractPngIdat(Buffer.from(base64, 'base64'));
+
+    // Act
+    const rawScanline = inflateSync(idat);
+
+    // Assert
+    expect(Array.from(rawScanline)).toStrictEqual([0, 0, 0, 0, 0]);
+  });
+});
 
 describe('MapView', () => {
   afterEach(() => {

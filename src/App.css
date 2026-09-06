@@ -5,6 +5,11 @@
   height: 100vh;
 }
 
+.map-view {
+  position: absolute;
+  inset: 0;
+}
+
 /* ピル形状のボタンバー。両テーマとも丸形状を維持する(design.mdの例外指定) */
 .theme-switch {
   position: absolute;

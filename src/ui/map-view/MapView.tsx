@@ -7,9 +7,9 @@ import { createGameMapCrs } from './gameMapCrs';
 import { useTileLayerUrl } from './useTileLayerUrl';
 
 const TILE_SIZE = 512;
-// 未探索領域(タイル404)を空白表示にするための透明1x1px PNG。エラー画面は出さない方針(design.md F-001節)。
-const TRANSPARENT_TILE_URL =
-  'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=';
+// 未探索領域(タイル404)を空白表示にするための透明1x1px PNG(RGBA全て0)。エラー画面は出さない方針(design.md F-001節)。
+export const TRANSPARENT_TILE_URL =
+  'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR4nGNgAAIAAAUAAXpeqz8AAAAASUVORK5CYII=';
 
 type MapMetadataState =
   { status: 'loading' } | { status: 'loaded'; zMax: number; minZoom: number } | { status: 'error' };
@@ -28,7 +28,14 @@ function MapCanvas({ zMax, minZoom }: MapCanvasProps) {
   const crs = createGameMapCrs(zMax);
 
   return (
-    <MapContainer crs={crs} center={[0, 0]} zoom={minZoom} minZoom={minZoom} maxZoom={zMax}>
+    <MapContainer
+      className="map-view"
+      crs={crs}
+      center={[0, 0]}
+      zoom={minZoom}
+      minZoom={minZoom}
+      maxZoom={zMax}
+    >
       <TileLayer url={tileUrl} tileSize={TILE_SIZE} noWrap errorTileUrl={TRANSPARENT_TILE_URL} />
     </MapContainer>
   );
