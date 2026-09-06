@@ -1,8 +1,12 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, test } from 'vitest';
+import { describe, expect, test, vi } from 'vitest';
 import App from '../App';
 import { ThemeProvider } from '../ui/theme/ThemeProvider';
+
+vi.mock('../ui/map-view/MapView', () => ({
+  MapView: () => <div data-testid="map-view-stub" />,
+}));
 
 function renderApp() {
   return render(
@@ -13,12 +17,12 @@ function renderApp() {
 }
 
 describe('App', () => {
-  test('アプリを描画したら見出しが表示される', () => {
+  test('アプリを描画したら地図ビューが表示される', () => {
     // Act
     renderApp();
 
     // Assert
-    expect(screen.getByRole('heading', { name: 'マイクラMAPエディター' })).toBeInTheDocument();
+    expect(screen.getByTestId('map-view-stub')).toBeInTheDocument();
   });
 
   test('アプリを描画したらシンプルテーマが選択された状態になる', () => {
