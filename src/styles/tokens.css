@@ -13,6 +13,9 @@
   /* ピル形状(BottomNavBar等)は両テーマ共通で丸を維持する例外 */
   --radius-pill: 999px;
 
+  /* テーマ切替などの暫定オーバーレイUIを地図の上に重ねるための重ね順 */
+  --z-overlay: 1000;
+
   --font-body: system-ui, 'Noto Sans JP', sans-serif;
   /* 座標の数値表示。桁数変化で文字幅がジッターしないよう等幅にする */
   --font-mono: 'Courier Prime', ui-monospace, monospace;
