@@ -17,10 +17,14 @@
     "deploy:map-data": "tsx scripts/deploy/index.ts"
   },
   "dependencies": {
+    "leaflet": "^1.9.4",
     "prismarine-nbt": "^2.8.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
-    "sharp": "^0.35.4"
+    "react-leaflet": "^5.0.0",
+    "sharp": "^0.35.4",
+    "terra-draw": "^1.33.0",
+    "terra-draw-leaflet-adapter": "^1.3.0"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
@@ -28,6 +32,7 @@
     "@testing-library/jest-dom": "^7.0.1",
     "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^14.6.6",
+    "@types/leaflet": "^1.9.22",
     "@types/node": "^24.13.3",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
