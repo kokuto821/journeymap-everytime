@@ -43,6 +43,10 @@ npm run format:check  # フォーマット崩れのチェックのみ
 npm run build
 ```
 
+## スタイリング方針
+
+Tailwind CSS v4(CSS-first、`@tailwindcss/vite`)を導入済み。今後のコンポーネント実装(F-002レイヤー切替・F-003座標表示等)もTailwindのユーティリティクラスで実装する方針。テーマ用CSS変数(`src/styles/tokens.css`・`src/styles/theme.css`)は`src/index.css`の`@theme`でTailwindのセマンティックトークンにエイリアスして使う。
+
 ## マップデータのデプロイ(scripts/deploy)
 
 JourneyMapのローカルデータをエクスポートし(`npm run export:map-data`。詳細は要件定義書・エクスポート結果ディレクトリ `scripts/export/output/` を参照)、その出力結果をCloudflare R2バケットへフルシンク(全量上書き)アップロードするスクリプト。
