@@ -43,6 +43,9 @@ export const createTileCoordinate = ({
     zoom,
     x,
     y,
-    equals: (other) => zoom === other.zoom && x === other.x && y === other.y,
+    equals: (other) => {
+      const isSameCoordinate = zoom === other.zoom && x === other.x && y === other.y;
+      return isSameCoordinate;
+    },
   };
 };

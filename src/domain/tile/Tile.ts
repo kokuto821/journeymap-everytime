@@ -31,9 +31,12 @@ export const createTile = ({ dimension, layerType, tileCoordinate }: CreateTileP
     dimension,
     layerType,
     tileCoordinate,
-    equals: (other) =>
-      dimension === other.dimension &&
-      layerType === other.layerType &&
-      tileCoordinate.equals(other.tileCoordinate),
+    equals: (other) => {
+      const isSameTile =
+        dimension === other.dimension &&
+        layerType === other.layerType &&
+        tileCoordinate.equals(other.tileCoordinate);
+      return isSameTile;
+    },
   };
 };
