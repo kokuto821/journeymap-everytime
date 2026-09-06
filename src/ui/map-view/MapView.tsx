@@ -43,36 +43,39 @@ function MapCanvas({ zMax, minZoom, tileSize }: MapCanvasProps) {
   );
 }
 
+/**
+ * R2上のmetadata.jsonを取得し、結果に応じたMapMetadataStateを返す。
+ * getR2BaseUrl()の同期throwもfetchTileMetadata()の失敗も同じcatchで扱うため、
+ * baseUrlの取得自体もPromiseチェーンの中で行う。
+ */
+function loadMapMetadata(): Promise<MapMetadataState> {
+  return Promise.resolve()
+    .then(() => getR2BaseUrl())
+    .then((baseUrl) => fetchTileMetadata(baseUrl))
+    .then((metadata): MapMetadataState => ({
+      status: 'loaded',
+      zMax: metadata.zMax,
+      minZoom: metadata.minZoom,
+      tileSize: metadata.tileSize,
+    }))
+    .catch((): MapMetadataState => ({ status: 'error' }));
+}
+
 /** S-01地図ビュー画面。R2上のmetadata.jsonを取得し、初期レイヤー(昼)のタイルを表示する。 */
 export function MapView() {
   const [state, setState] = useState<MapMetadataState>({ status: 'loading' });
 
   useEffect(() => {
-    let cancelled = false;
+    const cancelledRef = { current: false };
 
-    // getR2BaseUrl()の同期throwもfetchTileMetadata()の失敗も同じcatchで扱うため、
-    // baseUrlの取得自体もPromiseチェーンの中で行う。
-    Promise.resolve()
-      .then(() => getR2BaseUrl())
-      .then((baseUrl) => fetchTileMetadata(baseUrl))
-      .then((metadata) => {
-        if (!cancelled) {
-          setState({
-            status: 'loaded',
-            zMax: metadata.zMax,
-            minZoom: metadata.minZoom,
-            tileSize: metadata.tileSize,
-          });
-        }
-      })
-      .catch(() => {
-        if (!cancelled) {
-          setState({ status: 'error' });
-        }
-      });
+    loadMapMetadata().then((nextState) => {
+      if (!cancelledRef.current) {
+        setState(nextState);
+      }
+    });
 
     return () => {
-      cancelled = true;
+      cancelledRef.current = true;
     };
   }, []);
 
