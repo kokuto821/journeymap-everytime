@@ -9,7 +9,7 @@
 ## 3. 既存実装の置き換え(テスト駆動)
 
 - [x] 3.1 `useTheme.ts`を`useThemeStore`への薄いラッパーに書き換える。呼び出しシグネチャ`{ themeName, setThemeName }`を変えない(委譲先: tdd)
-- [ ] 3.2 `main.tsx`から`ThemeProvider`によるラップを除去する(委譲先: tdd)
+- [x] 3.2 `main.tsx`から`ThemeProvider`によるラップを除去する(委譲先: coding。テストを伴わない変更のため)
 - [ ] 3.3 `ThemeProvider.tsx`/`themeContext.ts`を削除する(委譲先: tdd)
 
 ## 4. 既存テストの追従(テスト駆動)
