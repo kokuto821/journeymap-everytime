@@ -26,12 +26,13 @@ type MapCanvasProps = {
  * CRSはzMax確定後でないと正しく組み立てられないため、MapView側でloaded後のみ描画する。
  */
 function MapCanvas({ zMax, minZoom, tileSize }: MapCanvasProps) {
+  const style = { canvas: 'absolute inset-0' };
   const tileUrl = useTileLayerUrl('day');
   const crs = createGameMapCrs(zMax);
 
   return (
     <MapContainer
-      className="map-view"
+      className={style.canvas}
       crs={crs}
       center={[0, 0]}
       zoom={minZoom}

@@ -1,5 +1,27 @@
+@import 'tailwindcss';
 @import './styles/theme.css';
 @import './styles/tokens.css';
+
+/*
+ * 既存のCSS変数(src/styles/tokens.css・src/styles/theme.css)をTailwindの
+ * セマンティックトークンにエイリアスする。移行対象クラス(App.tsx・ThemeSwitch.tsx・
+ * MapView.tsx)で実際に使う変数のみを定義し、tokens.css/theme.css自体は変更しない。
+ */
+@theme {
+  --color-surface: var(--surface);
+  --color-on-surface-variant: var(--on-surface-variant);
+  --color-outline: var(--outline);
+  --color-primary: var(--primary);
+  --color-on-primary: var(--on-primary);
+  --shadow-token: var(--shadow);
+  --spacing-2xs: var(--space-2xs);
+  --spacing-xs: var(--space-xs);
+  --spacing-s: var(--space-s);
+  --spacing-m: var(--space-m);
+  --z-index-overlay: var(--z-overlay);
+  --border-width-token: var(--border-width);
+  --translate-token: var(--press-offset);
+}
 
 *,
 *::before,
