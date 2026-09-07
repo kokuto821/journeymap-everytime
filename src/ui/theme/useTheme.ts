@@ -1,12 +1,13 @@
-import { useContext } from 'react';
-import { ThemeContext, type ThemeContextValue } from './themeContext';
+import type { ThemeContextValue } from './themeContext';
+import { useThemeStore } from '../state/useThemeStore';
 
-export function useTheme(): ThemeContextValue {
-  const value = useContext(ThemeContext);
+/**
+ * useThemeStore(zustand)への薄いラッパー。
+ * 戻り値の形は従来のThemeContext版から変えていない。
+ */
+export const useTheme = (): ThemeContextValue => {
+  const themeName = useThemeStore((state) => state.themeName);
+  const setThemeName = useThemeStore((state) => state.setThemeName);
 
-  if (value === null) {
-    throw new Error('useTheme は ThemeProvider の内側で使用してください');
-  }
-
-  return value;
-}
+  return { themeName, setThemeName };
+};

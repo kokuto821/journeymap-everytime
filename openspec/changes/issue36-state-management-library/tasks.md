@@ -8,13 +8,13 @@
 
 ## 3. 既存実装の置き換え(テスト駆動)
 
-- [ ] 3.1 `useTheme.ts`を`useThemeStore`への薄いラッパーに書き換える。呼び出しシグネチャ`{ themeName, setThemeName }`を変えない(委譲先: tdd)
+- [x] 3.1 `useTheme.ts`を`useThemeStore`への薄いラッパーに書き換える。呼び出しシグネチャ`{ themeName, setThemeName }`を変えない(委譲先: tdd)
 - [ ] 3.2 `main.tsx`から`ThemeProvider`によるラップを除去する(委譲先: tdd)
 - [ ] 3.3 `ThemeProvider.tsx`/`themeContext.ts`を削除する(委譲先: tdd)
 
 ## 4. 既存テストの追従(テスト駆動)
 
-- [ ] 4.1 `useTheme.test.tsx`をProviderレス(store直接初期化)の構成に書き換える。「ThemeProviderの外で使うとエラー」ケースはstore方式では成立しないため削除する(委譲先: tdd)
+- [x] 4.1 `useTheme.test.tsx`をProviderレス(store直接初期化)の構成に書き換える。「ThemeProviderの外で使うとエラー」ケースはstore方式では成立しないため削除する(委譲先: tdd。3.1と同一サイクルで実施済み)
 - [ ] 4.2 `ThemeSwitch.test.tsx`をProviderレスの構成に書き換える(委譲先: tdd)
 
 ## 5. ドキュメント

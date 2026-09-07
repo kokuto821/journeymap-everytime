@@ -1,80 +1,53 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, test } from 'vitest';
-import type { ThemeName } from '../../../domain/theme/ThemeName';
-import { ThemeProvider } from '../ThemeProvider';
-import { useTheme } from '../useTheme';
+import { beforeEach, describe, expect, test } from 'vitest';
+import { DEFAULT_THEME_NAME } from '../../../domain/theme/ThemeName';
+import { useThemeStore } from '../../state/useThemeStore';
+import { ThemeProbe } from './helpers/ThemeProbe';
 
-function ThemeProbe() {
-  const { themeName, setThemeName } = useTheme();
+// useThemeStoreはモジュールスコープの単一インスタンスのため、各テスト前にstoreの状態を初期値へリセットする
+beforeEach(() => {
+  useThemeStore.setState({ themeName: DEFAULT_THEME_NAME });
+});
 
-  return (
-    <>
-      <output>{themeName}</output>
-      <button type="button" onClick={() => setThemeName('retro')}>
-        レトロにする
-      </button>
-      <button type="button" onClick={() => setThemeName('simple')}>
-        シンプルにする
-      </button>
-    </>
-  );
-}
-
-function renderProbe(initialThemeName?: ThemeName) {
-  return render(
-    <ThemeProvider initialThemeName={initialThemeName}>
-      <ThemeProbe />
-    </ThemeProvider>,
-  );
-}
-
-describe('ThemeProvider / useTheme', () => {
-  test('初期テーマを指定せずに描画したらシンプルテーマが適用される', () => {
+describe('useTheme', () => {
+  test('初期状態で描画したらuseThemeが返すthemeNameがsimpleになる', () => {
     // Act
-    renderProbe();
+    render(<ThemeProbe testId="theme-name" buttonLabel="レトロにする" targetTheme="retro" />);
 
     // Assert
-    expect(screen.getByRole('status')).toHaveTextContent('simple');
-    expect(document.documentElement.dataset.theme).toBe('simple');
+    expect(screen.getByTestId('theme-name')).toHaveTextContent('simple');
   });
 
-  test('初期テーマにレトロを指定して描画したらレトロテーマが適用される', () => {
+  test('storeの初期値をretroに設定して描画したらuseThemeが返すthemeNameがretroになる', () => {
+    // Arrange
+    useThemeStore.setState({ themeName: 'retro' });
+
     // Act
-    renderProbe('retro');
+    render(<ThemeProbe testId="theme-name" buttonLabel="シンプルにする" targetTheme="simple" />);
 
     // Assert
-    expect(document.documentElement.dataset.theme).toBe('retro');
+    expect(screen.getByTestId('theme-name')).toHaveTextContent('retro');
   });
 
-  test('setThemeNameでレトロテーマに切り替えたらdata-theme属性がretroになる', async () => {
+  test('複数コンポーネントでuseThemeを呼んでいる場合に一方のsetThemeNameを呼んだらもう一方のthemeNameにも反映される', async () => {
     // Arrange
     const user = userEvent.setup();
-    renderProbe();
 
     // Act
-    await user.click(screen.getByRole('button', { name: 'レトロにする' }));
+    render(
+      <>
+        <ThemeProbe testId="primary-theme-name" buttonLabel="プライマリをレトロにする" targetTheme="retro" />
+        <ThemeProbe
+          testId="secondary-theme-name"
+          buttonLabel="セカンダリをレトロにする"
+          targetTheme="retro"
+        />
+      </>,
+    );
+    await user.click(screen.getByRole('button', { name: 'セカンダリをレトロにする' }));
 
     // Assert
-    expect(screen.getByRole('status')).toHaveTextContent('retro');
-    expect(document.documentElement.dataset.theme).toBe('retro');
-  });
-
-  test('レトロテーマからシンプルテーマに戻したらdata-theme属性がsimpleになる', async () => {
-    // Arrange
-    const user = userEvent.setup();
-    renderProbe('retro');
-
-    // Act
-    await user.click(screen.getByRole('button', { name: 'シンプルにする' }));
-
-    // Assert
-    expect(screen.getByRole('status')).toHaveTextContent('simple');
-    expect(document.documentElement.dataset.theme).toBe('simple');
-  });
-
-  test('ThemeProviderの外でuseThemeを呼んだらエラーを投げる', () => {
-    // Act / Assert
-    expect(() => render(<ThemeProbe />)).toThrow(/ThemeProvider/);
+    expect(screen.getByTestId('primary-theme-name')).toHaveTextContent('retro');
   });
 });
