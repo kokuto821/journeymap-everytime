@@ -1,43 +1,50 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, test } from 'vitest';
+import { beforeEach, describe, test } from 'vitest';
+import { DEFAULT_THEME_NAME } from '../../../domain/theme/ThemeName';
+import { useThemeStore } from '../../state/useThemeStore';
 import { ThemeSwitch } from '../ThemeSwitch';
-import { ThemeProvider } from '../ThemeProvider';
+import { expectButtonPressed } from './helpers/themeSwitchTestHelpers';
 
-function renderThemeSwitch() {
-  return render(
-    <ThemeProvider>
-      <ThemeSwitch />
-    </ThemeProvider>,
-  );
-}
+// 各テスト前にstoreとDOMの状態を初期値へリセットする(zustand storeはモジュールスコープの単一インスタンスのため)
+beforeEach(() => {
+  useThemeStore.setState({ themeName: DEFAULT_THEME_NAME });
+  document.documentElement.dataset.theme = DEFAULT_THEME_NAME;
+});
 
 describe('ThemeSwitch', () => {
   test('描画したらシンプルテーマが選択された状態になる', () => {
     // Act
-    renderThemeSwitch();
+    render(<ThemeSwitch />);
 
     // Assert
-    expect(screen.getByRole('button', { name: 'シンプル' })).toHaveAttribute(
-      'aria-pressed',
-      'true',
-    );
-    expect(document.documentElement.dataset.theme).toBe('simple');
+    expectButtonPressed('シンプル', true);
+    expectButtonPressed('レトロゲーム', false);
   });
 
   test('レトロゲームのボタンを押したらレトロテーマが選択される', async () => {
     // Arrange
     const user = userEvent.setup();
-    renderThemeSwitch();
+    render(<ThemeSwitch />);
 
     // Act
     await user.click(screen.getByRole('button', { name: 'レトロゲーム' }));
 
     // Assert
-    expect(screen.getByRole('button', { name: 'レトロゲーム' })).toHaveAttribute(
-      'aria-pressed',
-      'true',
-    );
-    expect(document.documentElement.dataset.theme).toBe('retro');
+    expectButtonPressed('レトロゲーム', true);
+    expectButtonPressed('シンプル', false);
+  });
+
+  test('レトロからシンプルに戻したらシンプルテーマが選択される', async () => {
+    // Arrange
+    const user = userEvent.setup();
+    render(<ThemeSwitch />);
+    await user.click(screen.getByRole('button', { name: 'レトロゲーム' }));
+
+    // Act
+    await user.click(screen.getByRole('button', { name: 'シンプル' }));
+
+    // Assert
+    expectButtonPressed('シンプル', true);
   });
 });
