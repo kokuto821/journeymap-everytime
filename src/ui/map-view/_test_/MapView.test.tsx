@@ -1,7 +1,9 @@
 import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, test, vi } from 'vitest';
 import { MapView, TRANSPARENT_TILE_URL } from '../MapView';
 import { fetchTileMetadata } from '../../../infrastructure/tile/tileMetadataProvider';
+import { createTileMetadata } from './helpers/mapViewTestHelpers';
 
 vi.mock('../../../infrastructure/tile/tileMetadataProvider', () => ({
   fetchTileMetadata: vi.fn(),
@@ -95,12 +97,7 @@ describe('MapView', () => {
   test('metadata取得後は地図が表示される', async () => {
     // Arrange
     vi.stubEnv('VITE_R2_BASE_URL', 'https://example.com');
-    fetchTileMetadataMock.mockResolvedValue({
-      zMax: 5,
-      minZoom: 1,
-      tileSize: 512,
-      layers: {},
-    });
+    fetchTileMetadataMock.mockResolvedValue(createTileMetadata());
 
     // Act
     render(<MapView />);
@@ -114,12 +111,7 @@ describe('MapView', () => {
   test('metadataのtileSizeがタイル画像のサイズに反映される(ハードコードしない)', async () => {
     // Arrange
     vi.stubEnv('VITE_R2_BASE_URL', 'https://example.com');
-    fetchTileMetadataMock.mockResolvedValue({
-      zMax: 5,
-      minZoom: 1,
-      tileSize: 256,
-      layers: {},
-    });
+    fetchTileMetadataMock.mockResolvedValue(createTileMetadata({ tileSize: 256 }));
 
     // Act
     render(<MapView />);
@@ -143,6 +135,26 @@ describe('MapView', () => {
     // Assert
     await waitFor(() => {
       expect(screen.getByRole('alert')).toHaveTextContent('地図データの読み込みに失敗しました');
+    });
+  });
+
+  test('夜レイヤーに切り替えたらTileLayerのURLテンプレートがnightのものに切り替わる', async () => {
+    // Arrange
+    vi.stubEnv('VITE_R2_BASE_URL', 'https://example.com');
+    fetchTileMetadataMock.mockResolvedValue(createTileMetadata());
+    const user = userEvent.setup();
+    render(<MapView />);
+    await waitFor(() => {
+      expect(document.querySelector('.leaflet-container')).toBeInTheDocument();
+    });
+
+    // Act
+    await user.click(screen.getByRole('radio', { name: '夜' }));
+
+    // Assert
+    await waitFor(() => {
+      const tile = document.querySelector<HTMLImageElement>('.leaflet-tile');
+      expect(tile?.src).toContain('/night/');
     });
   });
 
