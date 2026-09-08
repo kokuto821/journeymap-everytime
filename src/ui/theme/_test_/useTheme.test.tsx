@@ -1,13 +1,12 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, test } from 'vitest';
-import { DEFAULT_THEME_NAME } from '../../../domain/theme/ThemeName';
 import { useThemeStore } from '../../state/useThemeStore';
+import { resetThemeStore } from '../../state/_test_/helpers/themeStoreTestHelpers';
 import { ThemeProbe } from './helpers/ThemeProbe';
 
-// useThemeStoreはモジュールスコープの単一インスタンスのため、各テスト前にstoreの状態を初期値へリセットする
 beforeEach(() => {
-  useThemeStore.setState({ themeName: DEFAULT_THEME_NAME });
+  resetThemeStore();
 });
 
 describe('useTheme', () => {

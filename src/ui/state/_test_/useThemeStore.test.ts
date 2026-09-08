@@ -10,7 +10,6 @@ beforeEach(() => {
 
 describe('themeNameの状態', () => {
   test('初期状態を参照したらthemeNameがDEFAULT_THEME_NAMEになる', () => {
-    // Arrange (beforeEachで初期化済み)
     // Act
     const { themeName } = useThemeStore.getState();
 
@@ -29,10 +28,9 @@ describe('themeNameの状態', () => {
 
 describe('data-theme属性への反映', () => {
   test('初期状態を参照したらdata-theme属性がDEFAULT_THEME_NAMEになる', () => {
-    // Arrange (beforeEachで初期化済み)
     // Assert
     expect(document.documentElement.dataset.theme).toBe(DEFAULT_THEME_NAME);
-  });
+  });  
 
   test('setThemeNameでretroに切り替えたらdata-theme属性がretroになる', () => {
     // Act

@@ -1,15 +1,12 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, test } from 'vitest';
-import { DEFAULT_THEME_NAME } from '../../../domain/theme/ThemeName';
-import { useThemeStore } from '../../state/useThemeStore';
+import { resetThemeStore } from '../../state/_test_/helpers/themeStoreTestHelpers';
 import { ThemeSwitch } from '../ThemeSwitch';
 import { expectButtonPressed } from './helpers/themeSwitchTestHelpers';
 
-// 各テスト前にstoreとDOMの状態を初期値へリセットする(zustand storeはモジュールスコープの単一インスタンスのため)
 beforeEach(() => {
-  useThemeStore.setState({ themeName: DEFAULT_THEME_NAME });
-  document.documentElement.dataset.theme = DEFAULT_THEME_NAME;
+  resetThemeStore();
 });
 
 describe('ThemeSwitch', () => {
