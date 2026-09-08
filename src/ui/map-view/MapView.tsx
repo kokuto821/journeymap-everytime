@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
 import { MapContainer, TileLayer } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
+import type { LayerType } from '../../domain/layer/LayerType';
 import { getR2BaseUrl } from '../../infrastructure/config/env';
 import { fetchTileMetadata } from '../../infrastructure/tile/tileMetadataProvider';
 import { createGameMapCrs } from './gameMapCrs';
+import { LayerSwitcher } from './LayerSwitcher';
 import { useTileLayerUrl } from './useTileLayerUrl';
 
 // 未探索領域(タイル404)を空白表示にするための透明1x1px PNG(RGBA全て0)。エラー画面は出さない方針(design.md F-001節)。
@@ -27,20 +29,24 @@ type MapCanvasProps = {
  */
 function MapCanvas({ zMax, minZoom, tileSize }: MapCanvasProps) {
   const style = { canvas: 'absolute inset-0' };
-  const tileUrl = useTileLayerUrl('day');
+  const [layerType, setLayerType] = useState<LayerType>('day');
+  const tileUrl = useTileLayerUrl(layerType);
   const crs = createGameMapCrs(zMax);
 
   return (
-    <MapContainer
-      className={style.canvas}
-      crs={crs}
-      center={[0, 0]}
-      zoom={minZoom}
-      minZoom={minZoom}
-      maxZoom={zMax}
-    >
-      <TileLayer url={tileUrl} tileSize={tileSize} noWrap errorTileUrl={TRANSPARENT_TILE_URL} />
-    </MapContainer>
+    <>
+      <MapContainer
+        className={style.canvas}
+        crs={crs}
+        center={[0, 0]}
+        zoom={minZoom}
+        minZoom={minZoom}
+        maxZoom={zMax}
+      >
+        <TileLayer url={tileUrl} tileSize={tileSize} noWrap errorTileUrl={TRANSPARENT_TILE_URL} />
+      </MapContainer>
+      <LayerSwitcher value={layerType} onChange={setLayerType} />
+    </>
   );
 }
 

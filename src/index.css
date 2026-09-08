@@ -14,10 +14,12 @@
   --color-primary: var(--primary);
   --color-on-primary: var(--on-primary);
   --shadow-token: var(--shadow);
+  --shadow-raised-token: var(--shadow-raised);
   --spacing-2xs: var(--space-2xs);
   --spacing-xs: var(--space-xs);
   --spacing-s: var(--space-s);
   --spacing-m: var(--space-m);
+  --spacing-l: var(--space-l);
   --z-index-overlay: var(--z-overlay);
   --border-width-token: var(--border-width);
   --translate-token: var(--press-offset);
