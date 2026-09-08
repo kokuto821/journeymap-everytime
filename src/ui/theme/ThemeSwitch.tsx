@@ -1,5 +1,5 @@
 import { THEME_NAMES } from '../../domain/theme/ThemeName';
-import { useTheme } from './useTheme';
+import { useThemeStore } from '../state/useThemeStore';
 
 const THEME_LABELS: Record<(typeof THEME_NAMES)[number], string> = {
   simple: 'シンプル',
@@ -8,7 +8,8 @@ const THEME_LABELS: Record<(typeof THEME_NAMES)[number], string> = {
 
 /** テーマ切替ボタン群。S-01の正式なUI配置(#5/F-002)が決まるまでの暫定コンポーネント。 */
 export function ThemeSwitch() {
-  const { themeName, setThemeName } = useTheme();
+  const themeName = useThemeStore((state) => state.themeName);
+  const setThemeName = useThemeStore((state) => state.setThemeName);
 
   // ピル形状のボタンバー。両テーマとも丸形状を維持する(design.mdの例外指定)
   // レトロテーマでは押下時に影が消えて右下へ沈み込む(シンプルテーマでは--press-offsetが0のため無効)
