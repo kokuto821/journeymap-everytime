@@ -47,6 +47,14 @@ npm run build
 
 Tailwind CSS v4(CSS-first、`@tailwindcss/vite`)を導入済み。今後のコンポーネント実装(F-002レイヤー切替・F-003座標表示等)もTailwindのユーティリティクラスで実装する方針。テーマ用CSS変数(`src/styles/tokens.css`・`src/styles/theme.css`)は`src/index.css`の`@theme`でTailwindのセマンティックトークンにエイリアスして使う。
 
+## 状態管理方針
+
+グローバルなUI状態(テーマ選択、今後のレイヤー切替・座標表示等)にはzustandを使う。React ContextやコンポーネントローカルなuseStateでのバケツリレー・Provider肥大化を避けるための採用(#36)。
+
+- **配置ディレクトリ**: `src/ui/state/`(オニオンアーキテクチャのui層内)。ドメイン型への依存は許容するが、domain/infrastructure層からui層のstoreへは依存させない
+- **命名規則**: 機能単位で1ファイル、`use<Feature>Store.ts`(例: `useThemeStore.ts`)。exportするフックは`use<Feature>Store`
+- 既存コンポーネントからは、storeを直接参照する薄いラッパーフック(例: `useTheme.ts`)経由でアクセスする構成を維持する
+
 ## マップデータのデプロイ(scripts/deploy)
 
 JourneyMapのローカルデータをエクスポートし(`npm run export:map-data`。詳細は要件定義書・エクスポート結果ディレクトリ `scripts/export/output/` を参照)、その出力結果をCloudflare R2バケットへフルシンク(全量上書き)アップロードするスクリプト。

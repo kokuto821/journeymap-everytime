@@ -19,4 +19,4 @@
 
 ## 5. ドキュメント
 
-- [ ] 5.1 README等に状態管理方針(store配置ディレクトリ`src/ui/state/`・命名規則`use<Feature>Store`)を明文化する(委譲先: なし。本スキルで直接編集)
+- [x] 5.1 README等に状態管理方針(store配置ディレクトリ`src/ui/state/`・命名規則`use<Feature>Store`)を明文化する(委譲先: なし。本スキルで直接編集)
