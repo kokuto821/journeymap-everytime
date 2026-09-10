@@ -5,7 +5,7 @@ import { ThemeSwitch } from './ui/theme/ThemeSwitch';
  * S-01地図ビュー画面(F-001)。テーマ切替はS-01の正式なUI配置(#5/F-002)が決まるまでの暫定オーバーレイ。
  */
 function App() {
-  const style = { main: 'relative w-full h-screen' };
+  const style = { main: 'relative w-full h-dvh' };
 
   return (
     <main className={style.main}>
