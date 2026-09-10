@@ -13,7 +13,7 @@ Minecraft JourneyMap(Java Edition用Mod)が生成する地図タイルを、マ�
 - バックエンド・DBは持たない。タイル画像・JSONはCloudflare R2に静的ファイルとして格納し、フロントエンドから直接読み込む構成。
 - データのエクスポート・デプロイはローカルPC上のスクリプトで手動実行する運用(CI/CDは使用しない)。
 
-現状、リポジトリは Vite の `react-ts` テンプレートを初期化した直後の状態で、地図表示などのアプリケーション機能は未実装。
+現状、地図表示機能(F-001)・レイヤー切替(F-002)・エクスポート/デプロイスクリプト(F-004/F-005)は実装済み。waypoint表示・編集機能(v1.1以降)は未実装。
 
 ## 開発コマンド
 
@@ -34,11 +34,11 @@ npm run format:check       # 整形崩れのチェックのみ(修正しない)
 
 ## アーキテクチャ
 
-- **フロントエンド**: Vite + React + TypeScript。要件定義書の技術構成(10章)ではタイル表示に Leaflet を使う方針(JourneyMapのXYZタイル構造との親和性を優先)。React配下での導入は react-leaflet 等を想定するが未導入。
+- **フロントエンド**: Vite + React + TypeScript。要件定義書の技術構成(10章)ではタイル表示に Leaflet を使う方針(JourneyMapのXYZタイル構造との親和性を優先)。`react-leaflet` を導入済みで地図表示機能を実装している。
 - **ビルド設定**: `vite.config.ts`(Vite本体)、`vitest.config.ts`(テスト実行専用。Vite本体の設定とは分離している)、`tsconfig.json` が `tsconfig.app.json`(アプリコード用)と `tsconfig.node.json`(Vite/Vitest設定・`scripts/`配下など Node 実行コード用)を参照するプロジェクト分割構成。
 - **Lint/Format**: `eslint.config.js` は flat config。`js.configs.recommended` + `typescript-eslint` + `eslint-plugin-react-hooks` + `eslint-plugin-react-refresh` に加え、配列末尾で `eslint-config-prettier/flat` を適用し、ESLintのスタイル系ルールとPrettierの競合を無効化している。ESLintはコード品質、Prettierはフォーマット専用という役割分担。
 - **`.prettierignore`** は `*.md` を除外している。日本語ドキュメント(README、要件定義書)がPrettierの対象になると意図しない差分が入るため。ドキュメント系ファイルを新設する場合もこの除外に従う。
-- **データ/インフラ(将来実装分、要件定義書10章)**: ホスティングは Cloudflare Pages(フロント配信)+ Cloudflare R2(タイル等の静的データ、約168MB)。必要に応じて Cloudflare Workers。エクスポート/デプロイは JourneyMapのローカルデータ(`.minecraft/journeymap/data`)を読み取るローカルスクリプトと Wrangler CLI 等で行う想定(このリポジトリにはまだスクリプト本体は無い)。
+- **データ/インフラ(要件定義書10章)**: ホスティングは Cloudflare Pages(フロント配信)+ Cloudflare R2(タイル等の静的データ、約168MB、未デプロイ)。必要に応じて Cloudflare Workers。エクスポート/デプロイは JourneyMapのローカルデータ(`.minecraft/journeymap/data`)を読み取る `scripts/export`(F-004)と、Wrangler CLI経由でR2へアップロードする `scripts/deploy`(F-005)が実装済みで、ローカルPC上で手動実行する運用。
 
 ## openspec(仕様駆動開発)
 
