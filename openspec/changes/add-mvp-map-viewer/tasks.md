@@ -1,7 +1,7 @@
 ## 1. 事前検証
 
 - [ ] 1.1 JourneyMapローカルタイルディレクトリ構造(ズームレベル/X/Y命名規則)を実データで確認し、Web標準タイル形式(XYZ)との互換性を確認する(design.md Open Questions)
-- [ ] 1.2 biomeデータ(8.2MB)の内容・用途を確認し、エクスポート時の扱いを決める(design.md Open Questions)
+- [x] 1.2 biomeデータ(8.2MB)の内容・用途を確認し、エクスポート時の扱いを決める(design.md Open Questions)
 
 ## 2. エクスポートスクリプト(map-data-export)
 
