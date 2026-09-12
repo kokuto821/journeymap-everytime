@@ -24,7 +24,7 @@
 ### タイル配信: R2の静的ファイルをLeaflet TileLayerで直接読み込み
 - R2バケットをCloudflare Pages/Workers経由、またはR2の公開URL経由でLeafletの`L.tileLayer`のURLテンプレートに直接指定する
 - バックエンドを介した動的配信は行わない(要件定義書10章の「専用バックエンドは持たない」方針に合致)
-- レイヤー切替はday/night/topoでURLテンプレートのパスを切り替える方式とする
+- レイヤー切替はday/night/topo/biomeの4レイヤーでURLテンプレートのパスを切り替える方式とする(issue #17、biomeもday/night/topoと同一形式のPNGタイルであることが確定したため同列に扱う)
 
 ### 地図操作: TerraDraw導入(issue #29)
 
@@ -93,21 +93,21 @@
 - **採用レイヤー**: ドメイン層・インフラ層・UI層の3層。フル4層(ドメイン/アプリケーション/インフラ/プレゼンテーション厳密分離、機能ごとにUseCaseクラス)は採用しない。「アプリケーション層」は独立ディレクトリを設けず、UI層内の薄いカスタムhooksに同居させる
 - **理由**: F-001〜F-003は単一画面・読み取り専用で複雑な業務ルールを持たず、UseCaseクラスやDIコンテナを導入しても解決すべき複雑さが存在しない。一方でUIにR2/Leaflet依存を直書きする責務混在は、インフラ層への集約とドメインの型(`LayerType`, `WorldCoordinate`)共有のみで防止できる
 - **依存方向**: `domain`は何もimportしない → `infrastructure`は`domain`をimportしてよい → `ui`は両方をimportしてよい。逆方向は禁止(MVPではESLintでの強制はせず、将来の拡張ポイントとして明記のみ)
-- **代替案**: UseCase/Interactorクラスの機能ごと作成、インターフェース+DIコンテナのリポジトリパターン、独立した「アプリケーション層」ディレクトリ → いずれも不採用(ボイラープレート増・YAGNI違反に対し実利が薄いため)。biomeデータのドメインモデル化も不採用(用途未確定、Open Questions参照)。Node.jsスクリプト(F-004/F-005)への同一4層+DIのフル適用も不採用(1回限りのCLIで複雑さに見合わない)
+- **代替案**: UseCase/Interactorクラスの機能ごと作成、インターフェース+DIコンテナのリポジトリパターン、独立した「アプリケーション層」ディレクトリ → いずれも不採用(ボイラープレート増・YAGNI違反に対し実利が薄いため)。Node.jsスクリプト(F-004/F-005)への同一4層+DIのフル適用も不採用(1回限りのCLIで複雑さに見合わない)
 
 **F-001〜F-005 レイヤー対応表**
 
 | 機能 | 実行環境 | ドメイン層 | インフラ層 | UI層/CLIエントリ |
 |---|---|---|---|---|
-| F-001 タイル地図表示 | フロント | `LayerType`(day/night/topo)、`Dimension`(overworld) | `r2TileUrlProvider`(LayerType→R2タイルURLテンプレート) | `MapView.tsx`(TerraDraw+`terra-draw-leaflet-adapter`の組み込みを含む)、`useTileLayerUrl` |
+| F-001 タイル地図表示 | フロント | `LayerType`(day/night/topo/biome)、`Dimension`(overworld) | `r2TileUrlProvider`(LayerType→R2タイルURLテンプレート) | `MapView.tsx`(TerraDraw+`terra-draw-leaflet-adapter`の組み込みを含む)、`useTileLayerUrl` |
 | F-002 レイヤー切替 | フロント | `LayerType`妥当性判定 | (F-001の`r2TileUrlProvider`を再利用) | `LayerSwitcher.tsx`、`useTileLayerUrl` |
 | F-003 座標表示・コピー | フロント | `WorldCoordinate`(値オブジェクト)、`convertLatLngToWorldCoordinate` | `clipboardWriter`(`navigator.clipboard`ラッパー) | `CoordinatePanel.tsx`、`useMapCoordinate` |
 | F-004 エクスポートスクリプト | Node.js CLI | `exportTargetPolicy`(allowlist方式、chunk_cache除外)、`Tile`/`Waypoint`形状定義 | `journeyMapFileReader`、`exportFileWriter` | `scripts/export/index.ts` |
 | F-005 デプロイスクリプト | Node.js CLI | (F-004の型を再利用) | `wranglerR2Uploader`(child_process経由でWrangler呼び出し) | `scripts/deploy/index.ts` |
 
-**ドメインモデル**: 値オブジェクト = `WorldCoordinate`、`TileCoordinate`(zoom/x/y)、`LayerType`(day/night/topo)、`Dimension`(overworld固定)。エンティティ = `Tile`(Dimension+LayerType+TileCoordinateが識別子)、`Waypoint`(名前・座標・アイコン・色、v1.1向け先行定義)。biomeデータは用途未確定のため未分類のままopaqueに扱う
+**ドメインモデル**: 値オブジェクト = `WorldCoordinate`、`TileCoordinate`(zoom/x/y)、`LayerType`(day/night/topo/biome、issue #17でbiomeを追加)、`Dimension`(overworld固定)。エンティティ = `Tile`(Dimension+LayerType+TileCoordinateが識別子)、`Waypoint`(名前・座標・アイコン・色、v1.1向け先行定義)
 
-**データ駆動設計**: ドメイン層はfetch/URL文字列/R2バケット名を一切持たない。インフラ層`r2TileUrlProvider`が`LayerType`とR2ベースURL(Vite環境変数経由)からLeaflet `TileLayer`用URLテンプレートを組み立てる一点に、タイルURL構築ロジックを集約する。v1.1以降のwaypoint/biome参照も同パターン(`waypointRepository`等)を踏襲する。エクスポート側は`exportTargetPolicy`(宣言的allowlist)に従い`journeyMapFileReader`が走査する
+**データ駆動設計**: ドメイン層はfetch/URL文字列/R2バケット名を一切持たない。インフラ層`r2TileUrlProvider`が`LayerType`とR2ベースURL(Vite環境変数経由)からLeaflet `TileLayer`用URLテンプレートを組み立てる一点に、タイルURL構築ロジックを集約する(biomeもday/night/topoと同じ`LayerType`の一員として同一パターンで扱う)。v1.1以降のwaypoint参照も同パターン(`waypointRepository`等)を踏襲する。エクスポート側は`exportTargetPolicy`(宣言的allowlist)に従い`journeyMapFileReader`が走査する
 
 **将来のディレクトリ構成**
 
@@ -156,7 +156,7 @@ TopAppBar(画面上部)とBottomNavBar(画面下部)の2要素で構成する。
 
 - **地図**: フルブリードで画面全体に表示。ヘッダー/ナビ等は無し(v1は単一画面のため不要)。ズームボタン・現在地FABは設けない。ピンチ/ホイール/ダブルタップ/ダブルクリック操作のみでズームする
 - **TopAppBar(座標表示・コピー、F-003)**: 画面上部中央、画面端から16pxのインセット、高さ48px。中央寄せで座標を表示する。地図クリック前は「地図をタップして座標表示」のプレースホルダ文言(本文フォント)、クリック後は等幅フォントで「X, Y, Z」形式の座標値に切り替わり、次のクリックで内容を置き換える(明示的な閉じるボタンは設けない、YAGNI)。座標表示の直後にコピーアイコンボタンを配置し、座標が無い間はdisabledにする
-- **BottomNavBar(レイヤー切替、F-002)**: 画面下部中央、画面端から24pxのインセット、ピル形状。昼/夜/地形の3アイコンボタンを8px間隔で横並びに配置し、モバイルの親指到達域に置く
+- **BottomNavBar(レイヤー切替、F-002)**: 画面下部中央、画面端から24pxのインセット、ピル形状。昼/夜/地形/バイオームの4アイコンボタンを8px間隔で横並びに配置し、モバイルの親指到達域に置く(issue #17でbiomeを追加)
   - 選択中: アイコン背景がアクセント色で塗られ、110%に拡大表示。レトロゲームテーマはさらに影が一段大きくポップする
   - 非選択: 補助テキスト色のアイコン、背景無し
 - **スコープ外の要素**: 設定ボタン・コンパスボタン・現在地FAB・waypoint一覧パネル・waypoint用ナビアイコンは、要件(F-001〜F-003)に無くwaypointのUI表示はv1.1スコープ外(proposal.md参照)のため、S-01には含めない
@@ -266,7 +266,7 @@ journeymap_export_kokuto_world_2026-08-06_22.14.48/
 **未解明のまま残る点**
 
 - lod*.jmd/jmmファイルおよび数値ディレクトリ(-4〜23)の内部フォーマット・厳密な用途(エクスポート対象外の判断自体は上記の通り確定させるが、フォーマットの解析自体は行っていない)
-- ~~biomeデータの地図描画への具体的な使われ方(要件定義書13.2 Q-4)~~ → **解決済み(2026-09-12、issue #17)**。実タイル(`biome/18/0,0.png`)を目視確認した結果、バイオームごとに単色で塗り分けられた完成画像(青=海系、緑斑点=陸地バイオーム等)であり、ツールチップ表示用の構造化データではない。day/night/topoと同列の「見た目レイヤー」の一種と判明。MVP(v1.0)ではフロントの`LayerType`(`src/domain/layer/LayerType.ts`)に含めず、UIでは参照しない。ただしF-004のエクスポート対象(`exportTargetPolicy.ts`の`LAYERS`)には引き続き含め、変換不要な単純コピーのままR2へ先行アップロードしておく(v1.1以降のbiomeレイヤー切替追加時にそのまま使う)
+- ~~biomeデータの地図描画への具体的な使われ方(要件定義書13.2 Q-4)~~ → **解決済み(2026-09-12、issue #17)**。実タイル(`biome/18/0,0.png`)を目視確認した結果、バイオームごとに単色で塗り分けられた完成画像(青=海系、緑斑点=陸地バイオーム等)であり、ツールチップ表示用の構造化データではない。day/night/topoと同列の「見た目レイヤー」の一種と判明。当初はMVP(v1.0)のフロントの`LayerType`に含めずv1.1へ先送りする方針だったが、day/night/topoと完全に同一形式のPNGタイルでありUI表示にそのまま使えることから、issue #17であらためて**MVP(v1.0)から`LayerType`(`src/domain/layer/LayerType.ts`)にbiomeを含め、第4のレイヤーとして表示する**方針に変更した(F-002)
 
 ## Risks / Trade-offs
 
@@ -278,5 +278,5 @@ journeymap_export_kokuto_world_2026-08-06_22.14.48/
 ## Open Questions
 
 - ~~JourneyMapのローカルタイルディレクトリ構造とWeb標準タイル形式(ズーム/X/Y命名規則)の厳密な互換性確認(要件定義書13.2 Q-2)~~ → **解決済み(2026-08-28)**。実データ検証によりDecisions「JourneyMapタイル構造とWeb標準(XYZ)の互換性」の結論(座標系・命名規則・タイルサイズ)を確認済み
-- ~~biomeデータ(8.2MB)の地図描画への具体的な使われ方(要件定義書13.2 Q-4)~~ → **解決済み(2026-09-12、issue #17)**。上記「未解明のまま残る点」参照。バイオーム色分けの完成PNGタイルと判明し、MVPではエクスポート対象に含めつつフロントでは未参照とする方針を確定
+- ~~biomeデータ(8.2MB)の地図描画への具体的な使われ方(要件定義書13.2 Q-4)~~ → **解決済み(2026-09-12、issue #17)**。上記「未解明のまま残る点」参照。バイオーム色分けの完成PNGタイルと判明し、MVP(v1.0)からday/night/topoと同列の第4レイヤーとしてフロントに表示する方針を確定
 - lod*.jmd/jmm・数値ディレクトリ(-4〜23)として実データで新たに発見したJourneyMap内部LODキャッシュ機構の内部フォーマット・用途(上記Decisions節「実データ検証結果」参照)。エクスポート対象外という判断自体は確定させたが、フォーマット解析は行っていない
