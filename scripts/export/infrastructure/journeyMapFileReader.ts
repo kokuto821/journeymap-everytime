@@ -7,10 +7,10 @@ import { toPosixPath, walkFiles } from '../../shared/fileWalker.ts';
  * `exportTargetPolicy.isExportTarget` によるエクスポート対象ファイルのみを
  * `worldRootDir` からの相対パス(`/`区切りに正規化済み)の配列として返す。
  */
-export function readJourneyMapFiles(worldRootDir: string): string[] {
+export const readJourneyMapFiles = (worldRootDir: string): string[] => {
   if (!fs.existsSync(worldRootDir) || !fs.statSync(worldRootDir).isDirectory()) {
     throw new Error(`ワールドディレクトリが見つかりません: ${worldRootDir}`);
   }
 
   return walkFiles(worldRootDir).map(toPosixPath).filter(isExportTarget);
-}
+};

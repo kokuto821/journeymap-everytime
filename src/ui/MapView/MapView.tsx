@@ -23,11 +23,16 @@ type MapCanvasProps = {
   tileSize: number;
 };
 
+// JourneyMapのワールド座標原点(worldX=0, worldZ=0)を地図の初期中心にする。
+const MAP_CENTER_LAT = 0;
+const MAP_CENTER_LNG = 0;
+const MAP_CENTER: [number, number] = [MAP_CENTER_LAT, MAP_CENTER_LNG];
+
 /**
  * metadata.json取得後に組み立てる地図本体。
  * CRSはzMax確定後でないと正しく組み立てられないため、MapView側でloaded後のみ描画する。
  */
-function MapCanvas({ zMax, minZoom, tileSize }: MapCanvasProps) {
+const MapCanvas = ({ zMax, minZoom, tileSize }: MapCanvasProps) => {
   const style = { canvas: 'absolute inset-0' };
   const [layerType, setLayerType] = useState<LayerType>('day');
   const tileUrl = useTileLayerUrl(layerType);
@@ -38,7 +43,7 @@ function MapCanvas({ zMax, minZoom, tileSize }: MapCanvasProps) {
       <MapContainer
         className={style.canvas}
         crs={crs}
-        center={[0, 0]}
+        center={MAP_CENTER}
         zoom={minZoom}
         minZoom={minZoom}
         maxZoom={zMax}
@@ -48,15 +53,15 @@ function MapCanvas({ zMax, minZoom, tileSize }: MapCanvasProps) {
       <LayerSwitcher value={layerType} onChange={setLayerType} />
     </>
   );
-}
+};
 
 /**
  * R2上のmetadata.jsonを取得し、結果に応じたMapMetadataStateを返す。
  * getR2BaseUrl()の同期throwもfetchTileMetadata()の失敗も同じcatchで扱うため、
  * baseUrlの取得自体もPromiseチェーンの中で行う。
  */
-function loadMapMetadata(): Promise<MapMetadataState> {
-  return Promise.resolve()
+const loadMapMetadata = (): Promise<MapMetadataState> =>
+  Promise.resolve()
     .then(() => getR2BaseUrl())
     .then((baseUrl) => fetchTileMetadata(baseUrl))
     .then((metadata): MapMetadataState => ({
@@ -66,10 +71,9 @@ function loadMapMetadata(): Promise<MapMetadataState> {
       tileSize: metadata.tileSize,
     }))
     .catch((): MapMetadataState => ({ status: 'error' }));
-}
 
 /** S-01地図ビュー画面。R2上のmetadata.jsonを取得し、初期レイヤー(昼)のタイルを表示する。 */
-export function MapView() {
+export const MapView = () => {
   const [state, setState] = useState<MapMetadataState>({ status: 'loading' });
 
   useEffect(() => {
@@ -95,4 +99,4 @@ export function MapView() {
   }
 
   return <MapCanvas zMax={state.zMax} minZoom={state.minZoom} tileSize={state.tileSize} />;
-}
+};

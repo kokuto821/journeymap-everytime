@@ -24,7 +24,7 @@ type LayerCoordinateRange = {
 /**
  * リージョンタイル座標一覧からx/yそれぞれのmin/maxを求める。
  */
-function computeCoordinateRange(regionTiles: RegionTileInput[]): LayerCoordinateRange {
+const computeCoordinateRange = (regionTiles: RegionTileInput[]): LayerCoordinateRange => {
   const xs = regionTiles.map((tile) => tile.x);
   const ys = regionTiles.map((tile) => tile.y);
 
@@ -34,21 +34,20 @@ function computeCoordinateRange(regionTiles: RegionTileInput[]): LayerCoordinate
     minY: Math.min(...ys),
     maxY: Math.max(...ys),
   };
-}
+};
 
 /**
  * レイヤーごとのリージョンタイル座標一覧から、レイヤーごとの座標範囲一覧を組み立てる。
  */
-function buildLayerRanges(
+const buildLayerRanges = (
   layerRegionTiles: Partial<Record<Layer, RegionTileInput[]>>,
-): Partial<Record<Layer, LayerCoordinateRange>> {
-  return Object.fromEntries(
+): Partial<Record<Layer, LayerCoordinateRange>> =>
+  Object.fromEntries(
     Object.entries(layerRegionTiles).map(([layer, regionTiles]) => [
       layer,
       computeCoordinateRange(regionTiles),
     ]),
   );
-}
 
 /**
  * 各レイヤー(day/night/topo/biome等)のリージョンタイル座標一覧・zMax・minZoomを受け取り、
@@ -58,12 +57,14 @@ function buildLayerRanges(
  * minZoom自体の計算(tileZoomPyramid.tsの不動点検出)はスコープ外で、呼び出し側が
  * 計算済みの値を渡す前提とし、この関数はそのまま受け渡すのみ行う。
  */
-export function writeTileMetadata({
+const JSON_INDENT_SPACES = 2;
+
+export const writeTileMetadata = ({
   layerRegionTiles,
   zMax,
   minZoom,
   outputRootDir,
-}: WriteTileMetadataParams): void {
+}: WriteTileMetadataParams): void => {
   const metadata = {
     zMax,
     minZoom,
@@ -73,5 +74,5 @@ export function writeTileMetadata({
 
   fs.mkdirSync(outputRootDir, { recursive: true });
   const filePath = path.join(outputRootDir, METADATA_FILE_NAME);
-  fs.writeFileSync(filePath, JSON.stringify(metadata, null, 2));
-}
+  fs.writeFileSync(filePath, JSON.stringify(metadata, null, JSON_INDENT_SPACES));
+};

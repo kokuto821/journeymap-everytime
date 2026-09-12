@@ -1,8 +1,8 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, test, vi } from 'vitest';
-import App from '../App';
+import { App } from '../App';
 
-vi.mock('../ui/map-view/MapView', () => ({
+vi.mock('../ui/MapView/MapView', () => ({
   MapView: () => <div data-testid="map-view-stub" />,
 }));
 

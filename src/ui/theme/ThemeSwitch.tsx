@@ -7,7 +7,7 @@ const THEME_LABELS: Record<(typeof THEME_NAMES)[number], string> = {
 };
 
 /** テーマ切替ボタン群。S-01の正式なUI配置(#5/F-002)が決まるまでの暫定コンポーネント。 */
-export function ThemeSwitch() {
+export const ThemeSwitch = () => {
   const themeName = useThemeStore((state) => state.themeName);
   const setThemeName = useThemeStore((state) => state.setThemeName);
 
@@ -41,4 +41,4 @@ export function ThemeSwitch() {
       })}
     </div>
   );
-}
+};

@@ -19,14 +19,15 @@ export type WriteExportFilesParams = {
 
 type RegionCoordinate = { x: number; y: number };
 
+// REGION_TILE_FILE_NAME_PATTERNのキャプチャグループ番号(0番目は全体一致)。
+const REGION_TILE_X_GROUP_INDEX = 1;
+const REGION_TILE_Y_GROUP_INDEX = 2;
+
 /**
  * `overworld/<layer>/<x>,<y>.png`形式の相対パスからregion座標を抽出する。
  * 一致しない相対パスは`undefined`を返す。
  */
-function parseRegionTilePath(
-  relativePath: string,
-  layer: Layer,
-): RegionCoordinate | undefined {
+const parseRegionTilePath = (relativePath: string, layer: Layer): RegionCoordinate | undefined => {
   const prefix = `overworld/${layer}/`;
   if (!relativePath.startsWith(prefix)) {
     return undefined;
@@ -39,10 +40,10 @@ function parseRegionTilePath(
   }
 
   return {
-    x: Number(regionTileFileNameMatch[1]),
-    y: Number(regionTileFileNameMatch[2]),
+    x: Number(regionTileFileNameMatch[REGION_TILE_X_GROUP_INDEX]),
+    y: Number(regionTileFileNameMatch[REGION_TILE_Y_GROUP_INDEX]),
   };
-}
+};
 
 type BuildRegionTilesParams = {
   relativePaths: string[];
@@ -53,11 +54,11 @@ type BuildRegionTilesParams = {
 /**
  * 相対パス一覧から、指定レイヤーに属するリージョンタイル一覧を組み立てる。
  */
-function buildRegionTiles({
+const buildRegionTiles = ({
   relativePaths,
   worldRootDir,
   layer,
-}: BuildRegionTilesParams): RegionTileInput[] {
+}: BuildRegionTilesParams): RegionTileInput[] => {
   const regionTiles: RegionTileInput[] = [];
 
   for (const relativePath of relativePaths) {
@@ -73,12 +74,12 @@ function buildRegionTiles({
   }
 
   return regionTiles;
-}
+};
 
 /**
  * waypoints/WaypointData.datが走査結果に含まれる場合のみ読み込み・変換して出力する。
  */
-function writeWaypointsIfPresent({
+const writeWaypointsIfPresent = ({
   relativePaths,
   worldRootDir,
   outputRootDir,
@@ -86,7 +87,7 @@ function writeWaypointsIfPresent({
   relativePaths: string[];
   worldRootDir: string;
   outputRootDir: string;
-}): void {
+}): void => {
   if (!relativePaths.includes(WAYPOINT_DATA_RELATIVE_PATH)) {
     return;
   }
@@ -97,7 +98,7 @@ function writeWaypointsIfPresent({
     path.join(outputRootDir, WAYPOINT_JSON_FILE_NAME),
     JSON.stringify(convertedWaypoints),
   );
-}
+};
 
 type BuildLayerRegionTilesParams = {
   relativePaths: string[];
@@ -107,19 +108,21 @@ type BuildLayerRegionTilesParams = {
 /**
  * 相対パス一覧から、対象ファイルが存在するレイヤーのみを持つレイヤー別リージョンタイル一覧を組み立てる。
  */
-function buildLayerRegionTiles({
+const EMPTY_LENGTH = 0;
+
+const buildLayerRegionTiles = ({
   relativePaths,
   worldRootDir,
-}: BuildLayerRegionTilesParams): Partial<Record<Layer, RegionTileInput[]>> {
+}: BuildLayerRegionTilesParams): Partial<Record<Layer, RegionTileInput[]>> => {
   const layerRegionTiles: Partial<Record<Layer, RegionTileInput[]>> = {};
   for (const layer of LAYERS) {
     const regionTiles = buildRegionTiles({ relativePaths, worldRootDir, layer });
-    if (regionTiles.length > 0) {
+    if (regionTiles.length > EMPTY_LENGTH) {
       layerRegionTiles[layer] = regionTiles;
     }
   }
   return layerRegionTiles;
-}
+};
 
 type GenerateLayerTileZoomPyramidsParams = {
   layerRegionTiles: Partial<Record<Layer, RegionTileInput[]>>;
@@ -131,17 +134,16 @@ type GenerateLayerTileZoomPyramidsParams = {
  * レイヤーごとのリージョンタイル一覧からtileZoomPyramid.generateTileZoomPyramidを並行実行し、
  * 全レイヤー分の結果が揃うまで待つ。
  */
-function generateLayerTileZoomPyramids({
+const generateLayerTileZoomPyramids = ({
   layerRegionTiles,
   zMax,
   outputRootDir,
-}: GenerateLayerTileZoomPyramidsParams) {
-  return Promise.all(
+}: GenerateLayerTileZoomPyramidsParams) =>
+  Promise.all(
     Object.entries(layerRegionTiles).map(([layer, regionTiles]) =>
       generateTileZoomPyramid({ layer, zMax, regionTiles, outputRootDir }),
     ),
   );
-}
 
 /**
  * journeyMapFileReader.readJourneyMapFilesが返す相対パス一覧を受け取り、
@@ -149,12 +151,12 @@ function generateLayerTileZoomPyramids({
  * waypointデータをwaypointConverter.convertWaypointDataToJsonへ、全レイヤー処理完了後に
  * tileMetadataWriter.writeTileMetadataへと束ねて委譲するオーケストレーション層(インフラ層)。
  */
-export async function writeExportFiles({
+export const writeExportFiles = async ({
   relativePaths,
   worldRootDir,
   outputRootDir,
   zMax,
-}: WriteExportFilesParams): Promise<void> {
+}: WriteExportFilesParams): Promise<void> => {
   const layerRegionTiles = buildLayerRegionTiles({ relativePaths, worldRootDir });
 
   const pyramidResults = await generateLayerTileZoomPyramids({
@@ -167,4 +169,4 @@ export async function writeExportFiles({
 
   const minZoom = Math.min(...pyramidResults.map((result) => result.minZoom));
   writeTileMetadata({ layerRegionTiles, zMax, minZoom, outputRootDir });
-}
+};

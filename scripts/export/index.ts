@@ -20,7 +20,7 @@ const Z_MAX = 18;
  * 環境変数`JOURNEYMAP_WORLD_DATA_PATH`からワールドディレクトリパスを取得する。
  * 未設定(undefinedまたは空文字)の場合はErrorを投げる。
  */
-function getWorldRootDir(): string {
+const getWorldRootDir = (): string => {
   const worldRootDir = process.env.JOURNEYMAP_WORLD_DATA_PATH;
   if (!worldRootDir) {
     throw new Error(
@@ -29,12 +29,12 @@ function getWorldRootDir(): string {
   }
 
   return worldRootDir;
-}
+};
 
 /**
  * JourneyMapローカルデータを走査し、タイル・waypoint・メタデータをエクスポートする。
  */
-async function main(): Promise<void> {
+const main = async (): Promise<void> => {
   const worldRootDir = getWorldRootDir();
   const relativePaths = readJourneyMapFiles(worldRootDir);
 
@@ -46,11 +46,13 @@ async function main(): Promise<void> {
   });
 
   console.log(`エクスポートが完了しました(処理ファイル数: ${relativePaths.length})`);
-}
+};
+
+const FAILURE_EXIT_CODE = 1;
 
 try {
   await main();
 } catch (error) {
   console.error(error);
-  process.exit(1);
+  process.exit(FAILURE_EXIT_CODE);
 }

@@ -1,10 +1,10 @@
-import { MapView } from './ui/map-view/MapView';
+import { MapView } from './ui/MapView/MapView';
 import { ThemeSwitch } from './ui/theme/ThemeSwitch';
 
 /**
  * S-01地図ビュー画面(F-001)。テーマ切替はS-01の正式なUI配置(#5/F-002)が決まるまでの暫定オーバーレイ。
  */
-function App() {
+export const App = () => {
   const style = { main: 'relative w-full h-dvh' };
 
   return (
@@ -13,6 +13,4 @@ function App() {
       <ThemeSwitch />
     </main>
   );
-}
-
-export default App;
+};

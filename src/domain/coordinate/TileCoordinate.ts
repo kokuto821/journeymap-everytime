@@ -18,7 +18,9 @@ type CreateTileCoordinateParams = {
   y: number;
 };
 
-const isValidZoom = (value: number): boolean => Number.isInteger(value) && value >= 0;
+const MIN_ZOOM = 0;
+
+const isValidZoom = (value: number): boolean => Number.isInteger(value) && value >= MIN_ZOOM;
 
 /**
  * TileCoordinateを生成するファクトリ。

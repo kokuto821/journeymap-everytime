@@ -71,8 +71,9 @@ describe('uploadFileToR2', () => {
       await vi.runAllTimersAsync();
 
       // Assert
+      const expectedAttemptCount = 3;
       await assertion;
-      expect(execFileSync).toHaveBeenCalledTimes(3);
+      expect(execFileSync).toHaveBeenCalledTimes(expectedAttemptCount);
     });
 
     test.todo('リトライ上限を超えて失敗したら、それ以上execFileSyncを呼ばない');

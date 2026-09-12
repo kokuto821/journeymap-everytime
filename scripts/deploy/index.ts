@@ -11,7 +11,7 @@ import { EXPORT_OUTPUT_ROOT_DIR } from '../shared/outputRootDir.ts';
  * 環境変数`CLOUDFLARE_R2_BUCKET_NAME`からR2バケット名を取得する。
  * 未設定(undefinedまたは空文字)の場合はErrorを投げる。
  */
-function getR2BucketName(): string {
+const getR2BucketName = (): string => {
   const bucketName = process.env.CLOUDFLARE_R2_BUCKET_NAME;
   if (!bucketName) {
     throw new Error(
@@ -20,12 +20,12 @@ function getR2BucketName(): string {
   }
 
   return bucketName;
-}
+};
 
 /**
  * エクスポート出力ディレクトリ配下の全ファイルをCloudflare R2へフルシンク(全量上書き)アップロードする。
  */
-async function main(): Promise<void> {
+const main = async (): Promise<void> => {
   const bucketName = getR2BucketName();
   const deployTargetFiles = listDeployTargetFiles(EXPORT_OUTPUT_ROOT_DIR);
 
@@ -45,11 +45,13 @@ async function main(): Promise<void> {
   }
 
   console.log(`デプロイが完了しました(処理ファイル数: ${deployTargetFiles.length})`);
-}
+};
+
+const FAILURE_EXIT_CODE = 1;
 
 try {
   await main();
 } catch (error) {
   console.error(error);
-  process.exit(1);
+  process.exit(FAILURE_EXIT_CODE);
 }

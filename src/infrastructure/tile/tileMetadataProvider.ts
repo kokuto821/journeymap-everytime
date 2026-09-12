@@ -17,7 +17,7 @@ export type TileMetadata = {
 };
 
 /** R2ベースURLからmetadata.jsonを取得しパースして返す。取得に失敗した場合は例外を投げる。 */
-export async function fetchTileMetadata(baseUrl: string): Promise<TileMetadata> {
+export const fetchTileMetadata = async (baseUrl: string): Promise<TileMetadata> => {
   const normalizedBaseUrl = baseUrl.replace(/\/$/, '');
   const response = await fetch(`${normalizedBaseUrl}/metadata.json`);
 
@@ -26,4 +26,4 @@ export async function fetchTileMetadata(baseUrl: string): Promise<TileMetadata> 
   }
 
   return (await response.json()) as TileMetadata;
-}
+};
