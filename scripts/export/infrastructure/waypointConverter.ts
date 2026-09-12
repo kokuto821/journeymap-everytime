@@ -23,7 +23,7 @@ type NbtTag = { type: string; value: unknown };
  * - `byteArray`/`shortArray`/`intArray`/`longArray`: 通常のJS配列(`long`系はさらに文字列化)
  * - 上記以外(基本タグ): 値をそのまま返す
  */
-function convertTagValue(tagType: string, value: unknown): unknown {
+const convertTagValue = (tagType: string, value: unknown): unknown => {
   switch (tagType) {
     case 'compound':
       return convertCompoundValue(value as Record<string, NbtTag | undefined>);
@@ -38,15 +38,15 @@ function convertTagValue(tagType: string, value: unknown): unknown {
     default:
       return value;
   }
-}
+};
 
 /**
  * Compoundタグの中身(キーと`{type, value}`のRecord)を、
  * タグ型ラッパーを除去したプレーンオブジェクトに変換する。
  */
-function convertCompoundValue(
+const convertCompoundValue = (
   compoundValue: Record<string, NbtTag | undefined>,
-): Record<string, unknown> {
+): Record<string, unknown> => {
   const result: Record<string, unknown> = {};
 
   for (const [key, tag] of Object.entries(compoundValue)) {
@@ -57,7 +57,7 @@ function convertCompoundValue(
   }
 
   return result;
-}
+};
 
 /**
  * JourneyMapが出力する`waypoints/WaypointData.dat`(NBT形式、GZip圧縮無しの生NBT)の
@@ -68,8 +68,8 @@ function convertCompoundValue(
  * デコードできない不正なバイナリを渡した場合、`prismarine-nbt`がthrowする例外を
  * そのまま呼び出し元に伝播させる。
  */
-export function convertWaypointDataToJson(waypointDataBuffer: Buffer): Record<string, unknown> {
+export const convertWaypointDataToJson = (waypointDataBuffer: Buffer): Record<string, unknown> => {
   const parsed = nbt.parseUncompressed(waypointDataBuffer);
 
   return convertCompoundValue(parsed.value as Record<string, NbtTag | undefined>);
-}
+};

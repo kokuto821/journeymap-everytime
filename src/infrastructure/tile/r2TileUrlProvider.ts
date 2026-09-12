@@ -12,7 +12,10 @@ type BuildTileUrlTemplateParams = {
  * 出力構造(`tiles/<layer>/<z>/<x>,<y>.png`)はscripts/export/infrastructure/tileZoomPyramid.tsの
  * 出力パスと対応させている。
  */
-export function buildTileUrlTemplate({ baseUrl, layerType }: BuildTileUrlTemplateParams): string {
+export const buildTileUrlTemplate = ({
+  baseUrl,
+  layerType,
+}: BuildTileUrlTemplateParams): string => {
   const normalizedBaseUrl = baseUrl.replace(/\/$/, '');
   return `${normalizedBaseUrl}/tiles/${layerType}/{z}/{x},{y}.png`;
-}
+};

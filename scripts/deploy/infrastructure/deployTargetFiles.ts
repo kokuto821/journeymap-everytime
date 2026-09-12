@@ -9,7 +9,7 @@ export type DeployTargetFile = { localFilePath: string; r2ObjectKey: string };
  * ファイルのみを対象に、ローカルの絶対パスとR2オブジェクトキー(`outputRootDir`からの
  * 相対パスを`/`区切りに正規化したもの)の組を返す。
  */
-export function listDeployTargetFiles(outputRootDir: string): DeployTargetFile[] {
+export const listDeployTargetFiles = (outputRootDir: string): DeployTargetFile[] => {
   if (!fs.existsSync(outputRootDir) || !fs.statSync(outputRootDir).isDirectory()) {
     throw new Error(`デプロイ対象の出力ルートディレクトリが見つかりません: ${outputRootDir}`);
   }
@@ -18,4 +18,4 @@ export function listDeployTargetFiles(outputRootDir: string): DeployTargetFile[]
     localFilePath: path.join(outputRootDir, relativePath),
     r2ObjectKey: toPosixPath(relativePath),
   }));
-}
+};

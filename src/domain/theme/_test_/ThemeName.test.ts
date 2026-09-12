@@ -28,11 +28,16 @@ describe('ThemeName', () => {
     expect(result).toBe(false);
   });
 
-  test.each([[undefined], [null], [0]])('文字列以外(%s)を渡したらfalseを返す', (value) => {
-    // Act
-    const result = isThemeName(value);
+  const NUMBER_VALUE = 0;
 
-    // Assert
-    expect(result).toBe(false);
-  });
+  test.each([[undefined], [null], [NUMBER_VALUE]])(
+    '文字列以外(%s)を渡したらfalseを返す',
+    (value) => {
+      // Act
+      const result = isThemeName(value);
+
+      // Assert
+      expect(result).toBe(false);
+    },
+  );
 });

@@ -29,7 +29,9 @@ export default defineConfig([
     rules: {
       '@typescript-eslint/consistent-type-definitions': ['error', 'type'],
       '@typescript-eslint/no-explicit-any': 'error',
-      '@typescript-eslint/no-magic-numbers': 'error',
+      // ignoreTypeIndexes: `Parameters<typeof fn>[0]`等の型レベルインデックスアクセスは
+      // 実行時のマジックナンバーではないため対象外とする。
+      '@typescript-eslint/no-magic-numbers': ['error', { ignoreTypeIndexes: true }],
       'func-style': ['error', 'expression'],
       'import-x/no-default-export': 'error',
     },
@@ -39,15 +41,18 @@ export default defineConfig([
     files: ['**/*.tsx'],
     plugins: { unicorn },
     rules: {
-      'unicorn/filename-case': ['error', { case: 'pascalCase', ignore: [/^_test_$/, /^src$/, /^map-view$/] }],
+      'unicorn/filename-case': ['error', { case: 'pascalCase', ignore: [/^_test_$/, /^src$/] }],
     },
   },
   {
-    // hooks/utilsファイルはcamelCase
+    // hooks/utilsファイルはcamelCase。src/ui/MapViewは主要コンポーネント名に合わせたPascalCaseディレクトリのため対象外
     files: ['**/*.ts'],
     plugins: { unicorn },
     rules: {
-      'unicorn/filename-case': ['error', { case: 'camelCase', ignore: [/^_test_$/, /^src$/, /^map-view$/] }],
+      'unicorn/filename-case': [
+        'error',
+        { case: 'camelCase', ignore: [/^_test_$/, /^src$/, /^MapView$/] },
+      ],
     },
   },
   {

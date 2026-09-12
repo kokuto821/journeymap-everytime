@@ -29,7 +29,9 @@ describe('isLayerType', () => {
     expect(result).toBe(false);
   });
 
-  test.each([[null], [undefined], [0], [{}], [[]]])(
+  const NUMBER_VALUE = 0;
+
+  test.each([[null], [undefined], [NUMBER_VALUE], [{}], [[]]])(
     '文字列以外(%o)を渡したらfalseを返す',
     (value) => {
       // Act

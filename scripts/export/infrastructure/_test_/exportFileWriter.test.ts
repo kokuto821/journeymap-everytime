@@ -66,18 +66,20 @@ import { writeExportFiles } from '../exportFileWriter.ts';
 const WORLD_ROOT_DIR = '/world';
 const OUTPUT_ROOT_DIR = '/output';
 const Z_MAX = 8;
+const ONCE = 1;
+
+const FIRST_CALL_ARG_INDEX = 0;
 
 /**
  * 指定レイヤーで呼ばれたgenerateTileZoomPyramidの呼び出し引数を1件取り出す
  * (見つからない場合は`undefined`。そのレイヤーが呼ばれなかったことの検証に使う)。
  */
-function findGenerateTileZoomPyramidCallByLayer(
+const findGenerateTileZoomPyramidCallByLayer = (
   layer: string,
-): GenerateTileZoomPyramidCallArgs | undefined {
-  return generateTileZoomPyramidMock.mock.calls.find(
-    (call) => (call[0] as GenerateTileZoomPyramidCallArgs).layer === layer,
-  )?.[0] as GenerateTileZoomPyramidCallArgs | undefined;
-}
+): GenerateTileZoomPyramidCallArgs | undefined =>
+  generateTileZoomPyramidMock.mock.calls.find(
+    (call) => (call[FIRST_CALL_ARG_INDEX] as GenerateTileZoomPyramidCallArgs).layer === layer,
+  )?.[FIRST_CALL_ARG_INDEX] as GenerateTileZoomPyramidCallArgs | undefined;
 
 describe('writeExportFiles', () => {
   beforeEach(() => {
@@ -144,7 +146,7 @@ describe('writeExportFiles', () => {
   test('waypoints/WaypointData.datを含めたらファイルが読み込まれconvertWaypointDataToJsonの変換結果がJSONファイルとして出力される', async () => {
     // Arrange
     const relativePaths = ['overworld/day/0,0.png', 'waypoints/WaypointData.dat'];
-    const waypointBuffer = Buffer.from([0x01, 0x02]);
+    const waypointBuffer = Buffer.from('waypoint-bytes');
     const convertedWaypoints = { home: { x: 0, y: 64, z: 0 } };
     vi.mocked(fs.readFileSync).mockReturnValue(waypointBuffer);
     convertWaypointDataToJsonMock.mockReturnValue(convertedWaypoints);
@@ -162,12 +164,18 @@ describe('writeExportFiles', () => {
       path.join(WORLD_ROOT_DIR, 'waypoints/WaypointData.dat'),
     );
     expect(convertWaypointDataToJsonMock).toHaveBeenCalledWith(waypointBuffer);
+    const FILE_PATH_ARG_INDEX = 0;
+    const FILE_CONTENT_ARG_INDEX = 1;
     const writeFileSyncCall = vi
       .mocked(fs.writeFileSync)
       .mock.calls.find(([filePath]) => String(filePath).endsWith('waypoints.json'));
     expect(writeFileSyncCall).toBeDefined();
-    expect(String(writeFileSyncCall?.[0])).toBe(path.join(OUTPUT_ROOT_DIR, 'waypoints.json'));
-    expect(JSON.parse(String(writeFileSyncCall?.[1]))).toEqual(convertedWaypoints);
+    expect(String(writeFileSyncCall?.[FILE_PATH_ARG_INDEX])).toBe(
+      path.join(OUTPUT_ROOT_DIR, 'waypoints.json'),
+    );
+    expect(JSON.parse(String(writeFileSyncCall?.[FILE_CONTENT_ARG_INDEX]))).toEqual(
+      convertedWaypoints,
+    );
   });
 
   test('waypoints/WaypointData.datが走査結果に含まれなかったらconvertWaypointDataToJsonが呼ばれない', async () => {
@@ -237,14 +245,16 @@ describe('writeExportFiles', () => {
     });
 
     // Assert
-    expect(writeTileMetadataMock).toHaveBeenCalledTimes(1);
+    expect(writeTileMetadataMock).toHaveBeenCalledTimes(ONCE);
   });
 
   test('レイヤーごとに異なるminZoomが返されたらwriteTileMetadataにはその最小値が渡される', async () => {
     // Arrange
     const relativePaths = ['overworld/day/0,0.png', 'overworld/night/0,0.png'];
+    const dayMinZoom = 5;
+    const nightMinZoom = 3;
     generateTileZoomPyramidMock.mockImplementation(({ layer }: GenerateTileZoomPyramidCallArgs) =>
-      Promise.resolve({ minZoom: layer === 'day' ? 5 : 3 }),
+      Promise.resolve({ minZoom: layer === 'day' ? dayMinZoom : nightMinZoom }),
     );
 
     // Act
@@ -256,7 +266,9 @@ describe('writeExportFiles', () => {
     });
 
     // Assert
-    expect(writeTileMetadataMock).toHaveBeenCalledWith(expect.objectContaining({ minZoom: 3 }));
+    expect(writeTileMetadataMock).toHaveBeenCalledWith(
+      expect.objectContaining({ minZoom: nightMinZoom }),
+    );
   });
 
   test('あるレイヤーの対象ファイルが0件だったらそのレイヤーについてgenerateTileZoomPyramidが呼ばれない', async () => {
@@ -280,7 +292,7 @@ describe('writeExportFiles', () => {
     expect(findGenerateTileZoomPyramidCallByLayer('day')).toBeDefined();
     expect(findGenerateTileZoomPyramidCallByLayer('night')).toBeDefined();
     expect(findGenerateTileZoomPyramidCallByLayer('topo')).toBeDefined();
-    expect(writeTileMetadataMock).toHaveBeenCalledTimes(1);
+    expect(writeTileMetadataMock).toHaveBeenCalledTimes(ONCE);
   });
 
   test('いずれかのレイヤーでgenerateTileZoomPyramidが例外を投げたら呼び出し元に伝播する', async () => {

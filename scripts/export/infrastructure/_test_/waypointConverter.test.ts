@@ -23,18 +23,18 @@ import { convertWaypointDataToJson } from '../waypointConverter.ts';
  * 型定義と実際のビルダーの戻り値型が一致しない(ライブラリ側の型定義の不備)。
  * テストコード側の可読性を優先し、型不一致の吸収はこの1箇所に集約する。
  */
-function writeUncompressed(tag: unknown): Buffer {
-  return nbt.writeUncompressed(tag as Parameters<typeof nbt.writeUncompressed>[0]);
-}
+const writeUncompressed = (tag: unknown): Buffer =>
+  nbt.writeUncompressed(tag as Parameters<typeof nbt.writeUncompressed>[0]);
 
 describe('convertWaypointDataToJson', () => {
   describe('基本タグの変換', () => {
     test('string/intの基本タグを含むNBTバイナリを変換したらタグ型ラッパーを除去したプレーンオブジェクトになる', () => {
       // Arrange
+      const sampleCount = 42;
       const waypointDataBuffer = writeUncompressed(
         nbt.comp({
           name: nbt.string('拠点'),
-          count: nbt.int(42),
+          count: nbt.int(sampleCount),
         }),
       );
 
@@ -44,7 +44,7 @@ describe('convertWaypointDataToJson', () => {
       // Assert
       expect(result).toStrictEqual({
         name: '拠点',
-        count: 42,
+        count: sampleCount,
       });
     });
   });
@@ -52,6 +52,7 @@ describe('convertWaypointDataToJson', () => {
   describe('実データ相当のネスト構造', () => {
     test('waypoints/groups/journeymap_default配下にwaypointエントリを持つNBTバイナリを変換したら階層構造を保ったプレーンオブジェクトになる', () => {
       // Arrange
+      const fullOpacity = 1.0;
       const waypointDataBuffer = writeUncompressed(
         nbt.comp({
           waypoints: nbt.comp({
@@ -59,7 +60,7 @@ describe('convertWaypointDataToJson', () => {
               journeymap_default: nbt.comp({
                 'waypoint-id-1': nbt.comp({
                   icon: nbt.string('minecraft:textures/gui/waypoint.png'),
-                  opacity: nbt.double(1.0),
+                  opacity: nbt.double(fullOpacity),
                   resourceLocation: nbt.string('minecraft:overworld'),
                 }),
               }),
@@ -91,12 +92,14 @@ describe('convertWaypointDataToJson', () => {
   describe('複数エントリのList', () => {
     test('複数waypointエントリを持つList of CompoundのNBTバイナリを変換したらJS配列として複数エントリが得られる', () => {
       // Arrange
+      const fullOpacity = 1.0;
+      const halfOpacity = 0.5;
       const waypointDataBuffer = writeUncompressed(
         nbt.comp({
           waypointList: nbt.list(
             nbt.comp([
-              { icon: nbt.string('icon-a'), opacity: nbt.double(1.0) },
-              { icon: nbt.string('icon-b'), opacity: nbt.double(0.5) },
+              { icon: nbt.string('icon-a'), opacity: nbt.double(fullOpacity) },
+              { icon: nbt.string('icon-b'), opacity: nbt.double(halfOpacity) },
             ]),
           ),
         }),
@@ -138,9 +141,12 @@ describe('convertWaypointDataToJson', () => {
   describe('配列型タグの変換', () => {
     test('int-arrayタグを含むNBTバイナリを変換したら通常のJS配列(number[])になる', () => {
       // Arrange
+      const positiveValue = 1;
+      const negativeValue = -2;
+      const maxInt32Value = 2147483647;
       const waypointDataBuffer = writeUncompressed(
         nbt.comp({
-          colorValues: nbt.intArray([1, -2, 2147483647]),
+          colorValues: nbt.intArray([positiveValue, negativeValue, maxInt32Value]),
         }),
       );
 
@@ -149,7 +155,7 @@ describe('convertWaypointDataToJson', () => {
 
       // Assert
       expect(result).toStrictEqual({
-        colorValues: [1, -2, 2147483647],
+        colorValues: [positiveValue, negativeValue, maxInt32Value],
       });
     });
   });
@@ -199,7 +205,7 @@ describe('convertWaypointDataToJson', () => {
   describe('不正バイナリでの例外', () => {
     test('NBTとしてデコードできない不正なバイナリを渡したら例外がthrowされる', () => {
       // Arrange
-      const invalidBuffer = Buffer.from([0x01, 0x02, 0x03]);
+      const invalidBuffer = Buffer.from('not-a-valid-nbt-binary');
 
       // Act
       const act = () => convertWaypointDataToJson(invalidBuffer);

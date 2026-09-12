@@ -28,18 +28,20 @@ const METADATA_FILE_NAME = 'metadata.json';
  * 座標のみを持つ`RegionTileInput`を組み立てる(このテストではファイルの実体は不要なため
  * `filePath`はダミー値で埋める)。
  */
-function buildRegionTile(x: number, y: number): RegionTileInput {
-  return { x, y, filePath: `dummy/${x},${y}.png` };
-}
+const buildRegionTile = (x: number, y: number): RegionTileInput => ({
+  x,
+  y,
+  filePath: `dummy/${x},${y}.png`,
+});
 
 /**
  * `outputRootDir`直下の`metadata.json`を読み込み、パースした内容を返す
  * (生成されたメタデータJSONの検証用ヘルパー)。
  */
-function readMetadataJson(outputRootDir: string): unknown {
+const readMetadataJson = (outputRootDir: string): unknown => {
   const filePath = path.join(outputRootDir, METADATA_FILE_NAME);
   return JSON.parse(fs.readFileSync(filePath, 'utf-8'));
-}
+};
 
 describe('writeTileMetadata', () => {
   let outputRootDir: string;
@@ -54,8 +56,15 @@ describe('writeTileMetadata', () => {
 
   test('単一レイヤー・複数座標を入力したらzMaxとmin/maxとタイルサイズを含むJSONファイルが生成される', () => {
     // Arrange
+    const origin = { x: 0, y: 0 };
+    const farCorner = { x: 2, y: 3 };
+    const middle = { x: 1, y: 1 };
     const layerRegionTiles: Record<string, RegionTileInput[]> = {
-      day: [buildRegionTile(0, 0), buildRegionTile(2, 3), buildRegionTile(1, 1)],
+      day: [
+        buildRegionTile(origin.x, origin.y),
+        buildRegionTile(farCorner.x, farCorner.y),
+        buildRegionTile(middle.x, middle.y),
+      ],
     };
 
     // Act
@@ -74,9 +83,13 @@ describe('writeTileMetadata', () => {
 
   test('複数レイヤーそれぞれに異なる座標範囲を入力したらレイヤーごとに独立したmin/maxがJSONに含まれる', () => {
     // Arrange
+    const dayNear = { x: 0, y: 0 };
+    const dayFar = { x: 5, y: 5 };
+    const nightNear = { x: 10, y: 10 };
+    const nightFar = { x: 20, y: 20 };
     const layerRegionTiles: Record<string, RegionTileInput[]> = {
-      day: [buildRegionTile(0, 0), buildRegionTile(5, 5)],
-      night: [buildRegionTile(10, 10), buildRegionTile(20, 20)],
+      day: [buildRegionTile(dayNear.x, dayNear.y), buildRegionTile(dayFar.x, dayFar.y)],
+      night: [buildRegionTile(nightNear.x, nightNear.y), buildRegionTile(nightFar.x, nightFar.y)],
     };
 
     // Act
@@ -94,8 +107,15 @@ describe('writeTileMetadata', () => {
 
   test('負の座標を含む入力を渡したらmin/maxが数値としての大小関係で判定される', () => {
     // Arrange
+    const southWest = { x: -4, y: -10 };
+    const northEast = { x: 3, y: 2 };
+    const west = { x: -1, y: 5 };
     const layerRegionTiles: Record<string, RegionTileInput[]> = {
-      day: [buildRegionTile(-4, -10), buildRegionTile(3, 2), buildRegionTile(-1, 5)],
+      day: [
+        buildRegionTile(southWest.x, southWest.y),
+        buildRegionTile(northEast.x, northEast.y),
+        buildRegionTile(west.x, west.y),
+      ],
     };
 
     // Act
@@ -112,8 +132,9 @@ describe('writeTileMetadata', () => {
 
   test('minZoomを渡したら計算せずそのままJSONに含まれる', () => {
     // Arrange
+    const origin = { x: 0, y: 0 };
     const layerRegionTiles: Record<string, RegionTileInput[]> = {
-      day: [buildRegionTile(0, 0)],
+      day: [buildRegionTile(origin.x, origin.y)],
     };
 
     // Act
@@ -126,8 +147,9 @@ describe('writeTileMetadata', () => {
 
   test('リージョンタイルが1件のみのレイヤーだったらmin/maxがその1件の座標と一致する', () => {
     // Arrange
+    const coordinate = { x: 7, y: -3 };
     const layerRegionTiles: Record<string, RegionTileInput[]> = {
-      topo: [buildRegionTile(7, -3)],
+      topo: [buildRegionTile(coordinate.x, coordinate.y)],
     };
 
     // Act

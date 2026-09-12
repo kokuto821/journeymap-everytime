@@ -11,6 +11,9 @@ const LAYER_ICONS: Record<LayerType, typeof FiSun> = {
   topo: LuMountain,
 };
 
+const SELECTED_TAB_INDEX = 0;
+const UNSELECTED_TAB_INDEX = -1;
+
 export type LayerSwitcherProps = {
   /** 現在選択中のレイヤー種別 */
   value: LayerType;
@@ -18,17 +21,19 @@ export type LayerSwitcherProps = {
   onChange: (layerType: LayerType) => void;
 };
 
+const INDEX_STEP = 1;
+
 /** 矢印キー押下時に選択を前後のレイヤーへ循環移動させる(role="radiogroup"のロービングtabindex契約)。 */
-function getNextLayerType(current: LayerType, key: string): LayerType | undefined {
+const getNextLayerType = (current: LayerType, key: string): LayerType | undefined => {
   const currentIndex = LAYER_TYPES.indexOf(current);
   if (key === 'ArrowRight' || key === 'ArrowDown') {
-    return LAYER_TYPES[(currentIndex + 1) % LAYER_TYPES.length];
+    return LAYER_TYPES[(currentIndex + INDEX_STEP) % LAYER_TYPES.length];
   }
   if (key === 'ArrowLeft' || key === 'ArrowUp') {
-    return LAYER_TYPES[(currentIndex - 1 + LAYER_TYPES.length) % LAYER_TYPES.length];
+    return LAYER_TYPES[(currentIndex - INDEX_STEP + LAYER_TYPES.length) % LAYER_TYPES.length];
   }
   return undefined;
-}
+};
 
 /** S-01 BottomNavBar。昼/夜/地形の3レイヤーを切り替える(排他選択)。 */
 export const LayerSwitcher: FC<LayerSwitcherProps> = ({ value, onChange }) => {
@@ -65,7 +70,7 @@ export const LayerSwitcher: FC<LayerSwitcherProps> = ({ value, onChange }) => {
             aria-checked={isSelected}
             aria-label={label}
             title={label}
-            tabIndex={isSelected ? 0 : -1}
+            tabIndex={isSelected ? SELECTED_TAB_INDEX : UNSELECTED_TAB_INDEX}
             onClick={() => onChange(layerType)}
             onKeyDown={handleKeyDown}
           >

@@ -1,11 +1,11 @@
 import { afterEach, describe, expect, test, vi } from 'vitest';
 import { fetchTileMetadata } from '../tileMetadataProvider';
 
-function stubFetch(response: { ok: boolean; status?: number; json?: () => Promise<unknown> }) {
+const stubFetch = (response: { ok: boolean; status?: number; json?: () => Promise<unknown> }) => {
   const fetchMock = vi.fn().mockResolvedValue(response);
   vi.stubGlobal('fetch', fetchMock);
   return fetchMock;
-}
+};
 
 describe('fetchTileMetadata', () => {
   afterEach(() => {

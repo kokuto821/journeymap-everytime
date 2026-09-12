@@ -11,10 +11,12 @@ vi.mock('../../../infrastructure/tile/tileMetadataProvider', () => ({
 
 const fetchTileMetadataMock = vi.mocked(fetchTileMetadata);
 
-function base64ToBytes(base64: string): Uint8Array {
+const FIRST_CHAR_INDEX = 0;
+
+const base64ToBytes = (base64: string): Uint8Array => {
   const binary = atob(base64);
-  return Uint8Array.from(binary, (char) => char.charCodeAt(0));
-}
+  return Uint8Array.from(binary, (char) => char.charCodeAt(FIRST_CHAR_INDEX));
+};
 
 type PngChunks = {
   width: number;
@@ -23,8 +25,20 @@ type PngChunks = {
   idat: number[];
 };
 
+// PNGチャンクのフィールドサイズ(仕様上固定): length(4B) + type(4B) + data(可変) + crc(4B)。
+const CHUNK_LENGTH_FIELD_SIZE = 4;
+const CHUNK_TYPE_FIELD_SIZE = 4;
+const CHUNK_CRC_FIELD_SIZE = 4;
+const CHUNK_TYPE_FIELD_OFFSET = CHUNK_LENGTH_FIELD_SIZE;
+const CHUNK_DATA_OFFSET = CHUNK_LENGTH_FIELD_SIZE + CHUNK_TYPE_FIELD_SIZE;
+const CHUNK_OVERHEAD_SIZE = CHUNK_LENGTH_FIELD_SIZE + CHUNK_TYPE_FIELD_SIZE + CHUNK_CRC_FIELD_SIZE;
+// IHDRチャンクデータ内のフィールドオフセット(仕様上固定)。
+const IHDR_WIDTH_OFFSET = 0;
+const IHDR_HEIGHT_OFFSET = 4;
+const IHDR_COLOR_TYPE_OFFSET = 9;
+
 /** PNGのチャンク列からIHDR(幅・高さ・カラータイプ)とIDATを取り出す。 */
-function parsePng(bytes: Uint8Array): PngChunks {
+const parsePng = (bytes: Uint8Array): PngChunks => {
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
   const PNG_SIGNATURE_LENGTH = 8;
   let offset = PNG_SIGNATURE_LENGTH;
@@ -33,28 +47,30 @@ function parsePng(bytes: Uint8Array): PngChunks {
 
   while (offset < bytes.length) {
     const length = view.getUint32(offset);
-    const type = String.fromCharCode(...bytes.subarray(offset + 4, offset + 8));
-    const data = bytes.subarray(offset + 8, offset + 8 + length);
+    const type = String.fromCharCode(
+      ...bytes.subarray(offset + CHUNK_TYPE_FIELD_OFFSET, offset + CHUNK_DATA_OFFSET),
+    );
+    const data = bytes.subarray(offset + CHUNK_DATA_OFFSET, offset + CHUNK_DATA_OFFSET + length);
 
     if (type === 'IHDR') {
       ihdr = {
-        width: new DataView(data.buffer, data.byteOffset).getUint32(0),
-        height: new DataView(data.buffer, data.byteOffset).getUint32(4),
-        colorType: data[9],
+        width: new DataView(data.buffer, data.byteOffset).getUint32(IHDR_WIDTH_OFFSET),
+        height: new DataView(data.buffer, data.byteOffset).getUint32(IHDR_HEIGHT_OFFSET),
+        colorType: data[IHDR_COLOR_TYPE_OFFSET],
       };
     }
     if (type === 'IDAT') {
       idat = Array.from(data);
     }
 
-    offset += 12 + length;
+    offset += CHUNK_OVERHEAD_SIZE + length;
   }
 
   if (!ihdr || !idat) {
     throw new Error('IHDR/IDATチャンクが見つかりません');
   }
   return { ...ihdr, idat };
-}
+};
 
 describe('TRANSPARENT_TILE_URL', () => {
   test('完全に透明な1x1pxのRGBA PNGである', () => {
@@ -64,14 +80,19 @@ describe('TRANSPARENT_TILE_URL', () => {
     // Act
     const png = parsePng(base64ToBytes(base64));
 
-    // Assert
-    // colorType=6はPNG仕様上RGBA(アルファチャンネル有り)を表す。
-    // IDATは`filter=0, RGBA=(0,0,0,0)`(完全に透明)をzlib圧縮した既知のバイト列(圧縮方式に依存しないよう固定値で照合する)。
+    // Assert: colorType=6はPNG仕様上RGBA(アルファチャンネル有り)を表す。
+    // IDATは`filter=0, RGBA=(0,0,0,0)`(完全に透明)をzlib圧縮した既知のバイト列
+    // (圧縮方式に依存しないよう固定値で照合する)。
+    const EXPECTED_WIDTH = 1;
+    const EXPECTED_HEIGHT = 1;
+    const RGBA_COLOR_TYPE = 6;
+    // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- zlib圧縮済みの不透明な固定バイト列であり、1バイトごとに個別の意味はない
+    const EXPECTED_IDAT = [120, 156, 99, 96, 0, 2, 0, 0, 5, 0, 1];
     expect(png).toStrictEqual({
-      width: 1,
-      height: 1,
-      colorType: 6,
-      idat: [120, 156, 99, 96, 0, 2, 0, 0, 5, 0, 1],
+      width: EXPECTED_WIDTH,
+      height: EXPECTED_HEIGHT,
+      colorType: RGBA_COLOR_TYPE,
+      idat: EXPECTED_IDAT,
     });
   });
 });

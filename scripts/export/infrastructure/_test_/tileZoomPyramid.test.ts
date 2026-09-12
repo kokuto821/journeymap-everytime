@@ -36,14 +36,47 @@ const YELLOW: RgbaColor = { r: 255, g: 255, b: 0, alpha: ALPHA_OPAQUE_INPUT };
 
 const DEFAULT_NATIVE_TILE_SIZE = 4;
 
+// 1段下/2段下/3段下のズームレベルとの差分。
+const ONE_ZOOM_LEVEL_DOWN = 1;
+const TWO_ZOOM_LEVELS_DOWN = 2;
+const THREE_ZOOM_LEVELS_DOWN = 3;
+// 元サイズの半分に縮小されることの検証に使う除数。
+const HALVING_DIVISOR = 2;
+
+// 2×2グループの4象限を表す座標(左上/右上/左下/右下)。
+const TOP_LEFT = { x: 0, y: 0 };
+const TOP_RIGHT = { x: 1, y: 0 };
+const BOTTOM_LEFT = { x: 0, y: 1 };
+const BOTTOM_RIGHT = { x: 1, y: 1 };
+
+// 複数リージョンタイルのうち代表(1枚目)を参照する際のインデックス。
+const FIRST_REGION_TILE_INDEX = 0;
+
+// 4×4(0〜3)のリージョンタイル分布に使う座標の上限インデックスと、その総数。
+const MAX_GRID_INDEX = 3;
+const EXPECTED_LEAF_TILE_COUNT = 16;
+
+// 正負の境界をまたぐx座標分布(「座標変換の境界値」テスト用)。
+const BOUNDARY_X_MINUS_2 = -2;
+const BOUNDARY_X_MINUS_1 = -1;
+const BOUNDARY_X_0 = 0;
+const BOUNDARY_X_1 = 1;
+
+// 不動点{-1, 0}へ収束するx座標分布(「不動点検出」「戻り値のminZoom」テスト用)。
+const STRADDLING_X_MINUS_3 = -3;
+const STRADDLING_X_MINUS_1 = -1;
+const STRADDLING_X_0 = 0;
+const STRADDLING_X_2 = 2;
+const STRADDLING_XS = [STRADDLING_X_MINUS_3, STRADDLING_X_MINUS_1, STRADDLING_X_0, STRADDLING_X_2];
+
 /**
  * `size`四方の単色PNG画像を`filePath`に生成する(テスト用の入力リージョンタイル)。
  */
-async function createSolidColorTile(
+const createSolidColorTile = async (
   filePath: string,
   size: number,
   color: RgbaColor,
-): Promise<void> {
+): Promise<void> => {
   await sharp({
     create: {
       width: size,
@@ -54,7 +87,7 @@ async function createSolidColorTile(
   })
     .png()
     .toFile(filePath);
-}
+};
 
 type RegionTileEntry = { x: number; y: number; color?: RgbaColor };
 
@@ -63,62 +96,63 @@ type RegionTileEntry = { x: number; y: number; color?: RgbaColor };
  * そのまま`generateTileZoomPyramid`へ渡せる`RegionTileInput`の配列として返す
  * (テスト用の入力リージョンタイル一括準備ヘルパー)。
  */
-async function arrangeRegionTiles(
+const arrangeRegionTiles = async (
   sourceDir: string,
   entries: RegionTileEntry[],
-): Promise<RegionTileInput[]> {
-  return Promise.all(
+): Promise<RegionTileInput[]> =>
+  Promise.all(
     entries.map(async ({ x, y, color = RED }) => {
       const filePath = path.join(sourceDir, `${x},${y}.png`);
       await createSolidColorTile(filePath, DEFAULT_NATIVE_TILE_SIZE, color);
       return { x, y, filePath };
     }),
   );
-}
 
 /**
  * `generateTileZoomPyramid`が出力するタイルファイルパス
  * (`<outputRootDir>/tiles/<layer>/<z>/<x>,<y>.png`)を組み立てる。
  */
-function expectedTilePath(
+const expectedTilePath = (
   outputRootDir: string,
   layer: string,
   z: number,
   x: number,
   y: number,
-): string {
-  return path.join(outputRootDir, 'tiles', layer, String(z), `${x},${y}.png`);
-}
+): string => path.join(outputRootDir, 'tiles', layer, String(z), `${x},${y}.png`);
 
 type RawImage = { data: Buffer; width: number; height: number; channels: number };
 
 /**
  * PNG画像を生のRGBAピクセル値(アルファチャンネル込み)として読み込む。
  */
-async function readRawPixels(filePath: string): Promise<RawImage> {
+const readRawPixels = async (filePath: string): Promise<RawImage> => {
   const { data, info } = await sharp(filePath)
     .ensureAlpha()
     .raw()
     .toBuffer({ resolveWithObject: true });
   return { data, width: info.width, height: info.height, channels: info.channels };
-}
+};
 
 /**
  * `readRawPixels`の結果から、座標(x, y)のピクセル値をRGBAで取得する。
  */
-function getPixel(
+const GREEN_CHANNEL_OFFSET = 1;
+const BLUE_CHANNEL_OFFSET = 2;
+const ALPHA_CHANNEL_OFFSET = 3;
+
+const getPixel = (
   raw: RawImage,
   x: number,
   y: number,
-): { r: number; g: number; b: number; a: number } {
+): { r: number; g: number; b: number; a: number } => {
   const offset = (y * raw.width + x) * raw.channels;
   return {
     r: raw.data[offset],
-    g: raw.data[offset + 1],
-    b: raw.data[offset + 2],
-    a: raw.data[offset + 3],
+    g: raw.data[offset + GREEN_CHANNEL_OFFSET],
+    b: raw.data[offset + BLUE_CHANNEL_OFFSET],
+    a: raw.data[offset + ALPHA_CHANNEL_OFFSET],
   };
-}
+};
 
 describe('generateTileZoomPyramid', () => {
   let tmpRootDir: string;
@@ -153,10 +187,16 @@ describe('generateTileZoomPyramid', () => {
       await generateTileZoomPyramid({ layer, zMax, regionTiles, outputRootDir });
 
       // Assert
-      const composedPath = expectedTilePath(outputRootDir, layer, zMax - 1, 0, 0);
+      const composedPath = expectedTilePath(
+        outputRootDir,
+        layer,
+        zMax - ONE_ZOOM_LEVEL_DOWN,
+        TOP_LEFT.x,
+        TOP_LEFT.y,
+      );
       const metadata = await sharp(composedPath).metadata();
-      expect(metadata.width).toBe(DEFAULT_NATIVE_TILE_SIZE / 2);
-      expect(metadata.height).toBe(DEFAULT_NATIVE_TILE_SIZE / 2);
+      expect(metadata.width).toBe(DEFAULT_NATIVE_TILE_SIZE / HALVING_DIVISOR);
+      expect(metadata.height).toBe(DEFAULT_NATIVE_TILE_SIZE / HALVING_DIVISOR);
     });
   });
 
@@ -176,12 +216,38 @@ describe('generateTileZoomPyramid', () => {
       await generateTileZoomPyramid({ layer, zMax, regionTiles, outputRootDir });
 
       // Assert
-      const composedPath = expectedTilePath(outputRootDir, layer, zMax - 1, 0, 0);
+      const composedPath = expectedTilePath(
+        outputRootDir,
+        layer,
+        zMax - ONE_ZOOM_LEVEL_DOWN,
+        TOP_LEFT.x,
+        TOP_LEFT.y,
+      );
       const raw = await readRawPixels(composedPath);
-      expect(getPixel(raw, 0, 0)).toEqual({ r: 255, g: 0, b: 0, a: ALPHA_OPAQUE_OUTPUT });
-      expect(getPixel(raw, 1, 0)).toEqual({ r: 0, g: 255, b: 0, a: ALPHA_OPAQUE_OUTPUT });
-      expect(getPixel(raw, 0, 1)).toEqual({ r: 0, g: 0, b: 255, a: ALPHA_OPAQUE_OUTPUT });
-      expect(getPixel(raw, 1, 1)).toEqual({ r: 255, g: 255, b: 0, a: ALPHA_OPAQUE_OUTPUT });
+      expect(getPixel(raw, TOP_LEFT.x, TOP_LEFT.y)).toEqual({
+        r: 255,
+        g: 0,
+        b: 0,
+        a: ALPHA_OPAQUE_OUTPUT,
+      });
+      expect(getPixel(raw, TOP_RIGHT.x, TOP_RIGHT.y)).toEqual({
+        r: 0,
+        g: 255,
+        b: 0,
+        a: ALPHA_OPAQUE_OUTPUT,
+      });
+      expect(getPixel(raw, BOTTOM_LEFT.x, BOTTOM_LEFT.y)).toEqual({
+        r: 0,
+        g: 0,
+        b: 255,
+        a: ALPHA_OPAQUE_OUTPUT,
+      });
+      expect(getPixel(raw, BOTTOM_RIGHT.x, BOTTOM_RIGHT.y)).toEqual({
+        r: 255,
+        g: 255,
+        b: 0,
+        a: ALPHA_OPAQUE_OUTPUT,
+      });
     });
   });
 
@@ -191,13 +257,13 @@ describe('generateTileZoomPyramid', () => {
       const zMax = 5;
       const layer = 'day';
       const regionTiles = await arrangeRegionTiles(sourceDir, [{ x: 0, y: 0, color: RED }]);
-      const sourceFilePath = regionTiles[0].filePath;
+      const sourceFilePath = regionTiles[FIRST_REGION_TILE_INDEX].filePath;
 
       // Act
       await generateTileZoomPyramid({ layer, zMax, regionTiles, outputRootDir });
 
       // Assert
-      const copiedPath = expectedTilePath(outputRootDir, layer, zMax, 0, 0);
+      const copiedPath = expectedTilePath(outputRootDir, layer, zMax, TOP_LEFT.x, TOP_LEFT.y);
       const [sourceRaw, copiedRaw] = await Promise.all([
         readRawPixels(sourceFilePath),
         readRawPixels(copiedPath),
@@ -222,12 +288,28 @@ describe('generateTileZoomPyramid', () => {
       await generateTileZoomPyramid({ layer, zMax, regionTiles, outputRootDir });
 
       // Assert
-      const composedPath = expectedTilePath(outputRootDir, layer, zMax - 1, 0, 0);
+      const composedPath = expectedTilePath(
+        outputRootDir,
+        layer,
+        zMax - ONE_ZOOM_LEVEL_DOWN,
+        TOP_LEFT.x,
+        TOP_LEFT.y,
+      );
       const raw = await readRawPixels(composedPath);
-      expect(getPixel(raw, 0, 0)).toEqual({ r: 255, g: 0, b: 0, a: ALPHA_OPAQUE_OUTPUT });
-      expect(getPixel(raw, 1, 1)).toEqual({ r: 255, g: 255, b: 0, a: ALPHA_OPAQUE_OUTPUT });
-      expect(getPixel(raw, 1, 0).a).toBe(ALPHA_TRANSPARENT_OUTPUT);
-      expect(getPixel(raw, 0, 1).a).toBe(ALPHA_TRANSPARENT_OUTPUT);
+      expect(getPixel(raw, TOP_LEFT.x, TOP_LEFT.y)).toEqual({
+        r: 255,
+        g: 0,
+        b: 0,
+        a: ALPHA_OPAQUE_OUTPUT,
+      });
+      expect(getPixel(raw, BOTTOM_RIGHT.x, BOTTOM_RIGHT.y)).toEqual({
+        r: 255,
+        g: 255,
+        b: 0,
+        a: ALPHA_OPAQUE_OUTPUT,
+      });
+      expect(getPixel(raw, TOP_RIGHT.x, TOP_RIGHT.y).a).toBe(ALPHA_TRANSPARENT_OUTPUT);
+      expect(getPixel(raw, BOTTOM_LEFT.x, BOTTOM_LEFT.y).a).toBe(ALPHA_TRANSPARENT_OUTPUT);
     });
   });
 
@@ -242,12 +324,23 @@ describe('generateTileZoomPyramid', () => {
       await generateTileZoomPyramid({ layer, zMax, regionTiles, outputRootDir });
 
       // Assert
-      const composedPath = expectedTilePath(outputRootDir, layer, zMax - 1, 0, 0);
+      const composedPath = expectedTilePath(
+        outputRootDir,
+        layer,
+        zMax - ONE_ZOOM_LEVEL_DOWN,
+        TOP_LEFT.x,
+        TOP_LEFT.y,
+      );
       const raw = await readRawPixels(composedPath);
-      expect(getPixel(raw, 0, 0)).toEqual({ r: 255, g: 0, b: 0, a: ALPHA_OPAQUE_OUTPUT });
-      expect(getPixel(raw, 1, 0).a).toBe(ALPHA_TRANSPARENT_OUTPUT);
-      expect(getPixel(raw, 0, 1).a).toBe(ALPHA_TRANSPARENT_OUTPUT);
-      expect(getPixel(raw, 1, 1).a).toBe(ALPHA_TRANSPARENT_OUTPUT);
+      expect(getPixel(raw, TOP_LEFT.x, TOP_LEFT.y)).toEqual({
+        r: 255,
+        g: 0,
+        b: 0,
+        a: ALPHA_OPAQUE_OUTPUT,
+      });
+      expect(getPixel(raw, TOP_RIGHT.x, TOP_RIGHT.y).a).toBe(ALPHA_TRANSPARENT_OUTPUT);
+      expect(getPixel(raw, BOTTOM_LEFT.x, BOTTOM_LEFT.y).a).toBe(ALPHA_TRANSPARENT_OUTPUT);
+      expect(getPixel(raw, BOTTOM_RIGHT.x, BOTTOM_RIGHT.y).a).toBe(ALPHA_TRANSPARENT_OUTPUT);
     });
   });
 
@@ -256,18 +349,32 @@ describe('generateTileZoomPyramid', () => {
       // Arrange
       const zMax = 5;
       const layer = 'day';
+      const farRegionTileX = 4;
       const regionTiles = await arrangeRegionTiles(sourceDir, [
         { x: 0, y: 0, color: RED },
-        { x: 4, y: 0, color: GREEN },
+        { x: farRegionTileX, y: 0, color: GREEN },
       ]);
+      const missingGroup = { x: 1, y: 0 };
+      const secondGroup = { x: 2, y: 0 };
 
       // Act
       await generateTileZoomPyramid({ layer, zMax, regionTiles, outputRootDir });
 
       // Assert: 間に挟まる、4隅とも未探索のグループ(1,0)は生成されない
-      expect(fs.existsSync(expectedTilePath(outputRootDir, layer, zMax - 1, 1, 0))).toBe(false);
-      expect(fs.existsSync(expectedTilePath(outputRootDir, layer, zMax - 1, 0, 0))).toBe(true);
-      expect(fs.existsSync(expectedTilePath(outputRootDir, layer, zMax - 1, 2, 0))).toBe(true);
+      const parentZoom = zMax - ONE_ZOOM_LEVEL_DOWN;
+      expect(
+        fs.existsSync(
+          expectedTilePath(outputRootDir, layer, parentZoom, missingGroup.x, missingGroup.y),
+        ),
+      ).toBe(false);
+      expect(
+        fs.existsSync(expectedTilePath(outputRootDir, layer, parentZoom, TOP_LEFT.x, TOP_LEFT.y)),
+      ).toBe(true);
+      expect(
+        fs.existsSync(
+          expectedTilePath(outputRootDir, layer, parentZoom, secondGroup.x, secondGroup.y),
+        ),
+      ).toBe(true);
     });
   });
 
@@ -276,7 +383,7 @@ describe('generateTileZoomPyramid', () => {
       // Arrange
       const zMax = 5;
       const layer = 'day';
-      const xs = [-2, -1, 0, 1];
+      const xs = [BOUNDARY_X_MINUS_2, BOUNDARY_X_MINUS_1, BOUNDARY_X_0, BOUNDARY_X_1];
       const regionTiles = await arrangeRegionTiles(
         sourceDir,
         xs.map((x) => ({ x, y: 0 })),
@@ -286,8 +393,17 @@ describe('generateTileZoomPyramid', () => {
       await generateTileZoomPyramid({ layer, zMax, regionTiles, outputRootDir });
 
       // Assert: floor(-2/2)=floor(-1/2)=-1、floor(0/2)=floor(1/2)=0
-      expect(fs.existsSync(expectedTilePath(outputRootDir, layer, zMax - 1, -1, 0))).toBe(true);
-      expect(fs.existsSync(expectedTilePath(outputRootDir, layer, zMax - 1, 0, 0))).toBe(true);
+      const parentZoom = zMax - ONE_ZOOM_LEVEL_DOWN;
+      expect(
+        fs.existsSync(
+          expectedTilePath(outputRootDir, layer, parentZoom, BOUNDARY_X_MINUS_1, BOUNDARY_X_0),
+        ),
+      ).toBe(true);
+      expect(
+        fs.existsSync(
+          expectedTilePath(outputRootDir, layer, parentZoom, BOUNDARY_X_0, BOUNDARY_X_0),
+        ),
+      ).toBe(true);
     });
   });
 
@@ -296,7 +412,7 @@ describe('generateTileZoomPyramid', () => {
       // Arrange
       const zMax = 5;
       const layer = 'day';
-      const xs = [-3, -1, 0, 2];
+      const xs = STRADDLING_XS;
       const regionTiles = await arrangeRegionTiles(
         sourceDir,
         xs.map((x) => ({ x, y: 0 })),
@@ -321,8 +437,8 @@ describe('generateTileZoomPyramid', () => {
       const zMax = 5;
       const layer = 'day';
       const entries: RegionTileEntry[] = [];
-      for (let x = 0; x <= 3; x++) {
-        for (let y = 0; y <= 3; y++) {
+      for (let x = 0; x <= MAX_GRID_INDEX; x++) {
+        for (let y = 0; y <= MAX_GRID_INDEX; y++) {
           entries.push({ x, y });
         }
       }
@@ -334,15 +450,19 @@ describe('generateTileZoomPyramid', () => {
       // Assert
       const layerDir = path.join(outputRootDir, 'tiles', layer);
       const zMaxFiles = fs.readdirSync(path.join(layerDir, String(zMax)));
-      const zMaxMinus1Files = fs.readdirSync(path.join(layerDir, String(zMax - 1)));
-      const zMaxMinus2Files = fs.readdirSync(path.join(layerDir, String(zMax - 2)));
+      const zMaxMinus1Files = fs.readdirSync(
+        path.join(layerDir, String(zMax - ONE_ZOOM_LEVEL_DOWN)),
+      );
+      const zMaxMinus2Files = fs.readdirSync(
+        path.join(layerDir, String(zMax - TWO_ZOOM_LEVELS_DOWN)),
+      );
 
-      expect(zMaxFiles).toHaveLength(16);
+      expect(zMaxFiles).toHaveLength(EXPECTED_LEAF_TILE_COUNT);
       expect(zMaxMinus1Files.slice().sort()).toEqual(
         ['0,0.png', '1,0.png', '0,1.png', '1,1.png'].sort(),
       );
       expect(zMaxMinus2Files).toEqual(['0,0.png']);
-      expect(fs.existsSync(path.join(layerDir, String(zMax - 3)))).toBe(false);
+      expect(fs.existsSync(path.join(layerDir, String(zMax - THREE_ZOOM_LEVELS_DOWN)))).toBe(false);
     });
   });
 
@@ -358,7 +478,7 @@ describe('generateTileZoomPyramid', () => {
       const result = await generateTileZoomPyramid({ layer, zMax, regionTiles, outputRootDir });
 
       // Assert
-      expect(result.minZoom).toBe(zMax - 1);
+      expect(result.minZoom).toBe(zMax - ONE_ZOOM_LEVEL_DOWN);
     });
 
     test('正負をまたぐ座標分布を入力したら不動点へ到達したズームレベルがminZoomになる', async () => {
@@ -367,7 +487,7 @@ describe('generateTileZoomPyramid', () => {
       // ({-1, 0})で不動点に達するため、minZoomはzMax-2(=3)になる想定。
       const zMax = 5;
       const layer = 'day';
-      const xs = [-3, -1, 0, 2];
+      const xs = STRADDLING_XS;
       const regionTiles = await arrangeRegionTiles(
         sourceDir,
         xs.map((x) => ({ x, y: 0 })),
@@ -377,7 +497,7 @@ describe('generateTileZoomPyramid', () => {
       const result = await generateTileZoomPyramid({ layer, zMax, regionTiles, outputRootDir });
 
       // Assert
-      expect(result.minZoom).toBe(zMax - 2);
+      expect(result.minZoom).toBe(zMax - TWO_ZOOM_LEVELS_DOWN);
     });
   });
 
@@ -386,13 +506,17 @@ describe('generateTileZoomPyramid', () => {
       // Arrange
       const zMax = 7;
       const layer = 'night';
-      const regionTiles = await arrangeRegionTiles(sourceDir, [{ x: -4, y: 3, color: RED }]);
+      const regionTileX = -4;
+      const regionTileY = 3;
+      const regionTiles = await arrangeRegionTiles(sourceDir, [
+        { x: regionTileX, y: regionTileY, color: RED },
+      ]);
 
       // Act
       await generateTileZoomPyramid({ layer, zMax, regionTiles, outputRootDir });
 
       // Assert
-      const expectedPath = expectedTilePath(outputRootDir, layer, zMax, -4, 3);
+      const expectedPath = expectedTilePath(outputRootDir, layer, zMax, regionTileX, regionTileY);
       expect(fs.existsSync(expectedPath)).toBe(true);
     });
   });
