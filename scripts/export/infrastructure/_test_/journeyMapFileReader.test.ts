@@ -70,7 +70,7 @@ describe('readJourneyMapFiles', () => {
       const result = readJourneyMapFiles(worldDir);
 
       // Assert
-      expect(result.slice().sort()).toEqual(
+      expect(result.slice().sort()).toStrictEqual(
         [
           'overworld/day/1,2.png',
           'overworld/night/-1,-2.png',
@@ -100,7 +100,7 @@ describe('readJourneyMapFiles', () => {
       const result = readJourneyMapFiles(worldDir);
 
       // Assert
-      expect(result).toEqual([]);
+      expect(result).toStrictEqual([]);
     });
   });
 
