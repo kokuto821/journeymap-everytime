@@ -32,7 +32,9 @@ describe('listDeployTargetFiles', () => {
       const result = listDeployTargetFiles(outputRootDir);
 
       // Assert
-      expect(result.slice().sort((a, b) => a.r2ObjectKey.localeCompare(b.r2ObjectKey))).toStrictEqual(
+      expect(
+        result.slice().sort((a, b) => a.r2ObjectKey.localeCompare(b.r2ObjectKey)),
+      ).toStrictEqual(
         [
           {
             localFilePath: path.join(outputRootDir, 'overworld/day/0,0.png'),
@@ -57,7 +59,7 @@ describe('listDeployTargetFiles', () => {
       const result = listDeployTargetFiles(outputRootDir);
 
       // Assert
-      expect(result).toEqual([]);
+      expect(result).toStrictEqual([]);
     });
   });
 

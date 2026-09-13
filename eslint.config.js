@@ -6,6 +6,7 @@ import tseslint from 'typescript-eslint';
 import unicorn from 'eslint-plugin-unicorn';
 // eslint-plugin-importはpeerDependenciesがESLint9以下までのため、ESLint10対応のimport-xを採用
 import importX from 'eslint-plugin-import-x';
+import vitest from '@vitest/eslint-plugin';
 import { defineConfig, globalIgnores } from 'eslint/config';
 import prettierConfig from 'eslint-config-prettier/flat';
 
@@ -83,6 +84,14 @@ export default defineConfig([
     files: ['*.config.ts'],
     rules: {
       'import-x/no-default-export': 'off',
+    },
+  },
+  {
+    // テストファイルはtoEqualでなくtoStrictEqualを使うことを強制
+    files: ['**/_test_/**/*.test.{ts,tsx}'],
+    plugins: { vitest },
+    rules: {
+      'vitest/prefer-strict-equal': 'error',
     },
   },
   prettierConfig,
