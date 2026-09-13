@@ -134,7 +134,7 @@ describe('writeExportFiles', () => {
       });
 
       // Assert
-      expect(findGenerateTileZoomPyramidCallByLayer(layer)).toEqual({
+      expect(findGenerateTileZoomPyramidCallByLayer(layer)).toStrictEqual({
         layer,
         zMax: Z_MAX,
         regionTiles,
@@ -173,7 +173,7 @@ describe('writeExportFiles', () => {
     expect(String(writeFileSyncCall?.[FILE_PATH_ARG_INDEX])).toBe(
       path.join(OUTPUT_ROOT_DIR, 'waypoints.json'),
     );
-    expect(JSON.parse(String(writeFileSyncCall?.[FILE_CONTENT_ARG_INDEX]))).toEqual(
+    expect(JSON.parse(String(writeFileSyncCall?.[FILE_CONTENT_ARG_INDEX]))).toStrictEqual(
       convertedWaypoints,
     );
   });

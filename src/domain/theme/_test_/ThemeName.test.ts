@@ -4,7 +4,7 @@ import { DEFAULT_THEME_NAME, isThemeName, THEME_NAMES } from '../ThemeName';
 describe('ThemeName', () => {
   test('THEME_NAMESを参照したらシンプルとレトロの2種類が得られる', () => {
     // Assert
-    expect(THEME_NAMES).toEqual(['simple', 'retro']);
+    expect(THEME_NAMES).toStrictEqual(['simple', 'retro']);
   });
 
   test('DEFAULT_THEME_NAMEを参照したらシンプルテーマが得られる', () => {

@@ -224,25 +224,25 @@ describe('generateTileZoomPyramid', () => {
         TOP_LEFT.y,
       );
       const raw = await readRawPixels(composedPath);
-      expect(getPixel(raw, TOP_LEFT.x, TOP_LEFT.y)).toEqual({
+      expect(getPixel(raw, TOP_LEFT.x, TOP_LEFT.y)).toStrictEqual({
         r: 255,
         g: 0,
         b: 0,
         a: ALPHA_OPAQUE_OUTPUT,
       });
-      expect(getPixel(raw, TOP_RIGHT.x, TOP_RIGHT.y)).toEqual({
+      expect(getPixel(raw, TOP_RIGHT.x, TOP_RIGHT.y)).toStrictEqual({
         r: 0,
         g: 255,
         b: 0,
         a: ALPHA_OPAQUE_OUTPUT,
       });
-      expect(getPixel(raw, BOTTOM_LEFT.x, BOTTOM_LEFT.y)).toEqual({
+      expect(getPixel(raw, BOTTOM_LEFT.x, BOTTOM_LEFT.y)).toStrictEqual({
         r: 0,
         g: 0,
         b: 255,
         a: ALPHA_OPAQUE_OUTPUT,
       });
-      expect(getPixel(raw, BOTTOM_RIGHT.x, BOTTOM_RIGHT.y)).toEqual({
+      expect(getPixel(raw, BOTTOM_RIGHT.x, BOTTOM_RIGHT.y)).toStrictEqual({
         r: 255,
         g: 255,
         b: 0,
@@ -270,7 +270,7 @@ describe('generateTileZoomPyramid', () => {
       ]);
       expect(copiedRaw.width).toBe(sourceRaw.width);
       expect(copiedRaw.height).toBe(sourceRaw.height);
-      expect(copiedRaw.data).toEqual(sourceRaw.data);
+      expect(copiedRaw.data).toStrictEqual(sourceRaw.data);
     });
   });
 
@@ -296,13 +296,13 @@ describe('generateTileZoomPyramid', () => {
         TOP_LEFT.y,
       );
       const raw = await readRawPixels(composedPath);
-      expect(getPixel(raw, TOP_LEFT.x, TOP_LEFT.y)).toEqual({
+      expect(getPixel(raw, TOP_LEFT.x, TOP_LEFT.y)).toStrictEqual({
         r: 255,
         g: 0,
         b: 0,
         a: ALPHA_OPAQUE_OUTPUT,
       });
-      expect(getPixel(raw, BOTTOM_RIGHT.x, BOTTOM_RIGHT.y)).toEqual({
+      expect(getPixel(raw, BOTTOM_RIGHT.x, BOTTOM_RIGHT.y)).toStrictEqual({
         r: 255,
         g: 255,
         b: 0,
@@ -332,7 +332,7 @@ describe('generateTileZoomPyramid', () => {
         TOP_LEFT.y,
       );
       const raw = await readRawPixels(composedPath);
-      expect(getPixel(raw, TOP_LEFT.x, TOP_LEFT.y)).toEqual({
+      expect(getPixel(raw, TOP_LEFT.x, TOP_LEFT.y)).toStrictEqual({
         r: 255,
         g: 0,
         b: 0,
@@ -427,7 +427,7 @@ describe('generateTileZoomPyramid', () => {
       const zoomLevels = fs.readdirSync(layerDir).map(Number);
       const minZoomLevel = Math.min(...zoomLevels);
       const minZoomFiles = fs.readdirSync(path.join(layerDir, String(minZoomLevel)));
-      expect(minZoomFiles.sort()).toEqual(['-1,0.png', '0,0.png']);
+      expect(minZoomFiles.sort()).toStrictEqual(['-1,0.png', '0,0.png']);
     });
   });
 
@@ -458,10 +458,10 @@ describe('generateTileZoomPyramid', () => {
       );
 
       expect(zMaxFiles).toHaveLength(EXPECTED_LEAF_TILE_COUNT);
-      expect(zMaxMinus1Files.slice().sort()).toEqual(
+      expect(zMaxMinus1Files.slice().sort()).toStrictEqual(
         ['0,0.png', '1,0.png', '0,1.png', '1,1.png'].sort(),
       );
-      expect(zMaxMinus2Files).toEqual(['0,0.png']);
+      expect(zMaxMinus2Files).toStrictEqual(['0,0.png']);
       expect(fs.existsSync(path.join(layerDir, String(zMax - THREE_ZOOM_LEVELS_DOWN)))).toBe(false);
     });
   });
