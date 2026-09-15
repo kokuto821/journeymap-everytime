@@ -5,4 +5,5 @@ export const LAYER_LABELS: Record<LayerType, string> = {
   day: '昼',
   night: '夜',
   topo: '地形',
+  biome: 'バイオーム',
 };

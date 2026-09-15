@@ -2,7 +2,7 @@ import { describe, expect, test } from 'vitest';
 import { isLayerType } from '../LayerType';
 
 describe('isLayerType', () => {
-  test.each([['day'], ['night'], ['topo']])(
+  test.each([['day'], ['night'], ['topo'], ['biome']])(
     '定義済みのレイヤー種別(%s)を渡したらtrueを返す',
     (value) => {
       // Act
