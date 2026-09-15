@@ -17,4 +17,15 @@ describe('useTileLayerUrl', () => {
     // Assert
     expect(result.current).toBe('https://example.com/tiles/night/{z}/{x},{y}.png');
   });
+
+  test('layerTypeがbiomeの場合のタイルURLテンプレートを返す', () => {
+    // Arrange
+    vi.stubEnv('VITE_R2_BASE_URL', 'https://example.com');
+
+    // Act
+    const { result } = renderHook(() => useTileLayerUrl('biome'));
+
+    // Assert
+    expect(result.current).toBe('https://example.com/tiles/biome/{z}/{x},{y}.png');
+  });
 });

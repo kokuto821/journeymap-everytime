@@ -1,5 +1,5 @@
-/** JourneyMapが生成するレイヤー種別(昼間/夜間/地形図)の一覧 */
-export const LAYER_TYPES = ['day', 'night', 'topo'] as const;
+/** JourneyMapが生成するレイヤー種別(昼間/夜間/地形図/バイオーム)の一覧 */
+export const LAYER_TYPES = ['day', 'night', 'topo', 'biome'] as const;
 
 export type LayerType = (typeof LAYER_TYPES)[number];
 

@@ -1,6 +1,6 @@
 import type { FC, KeyboardEvent } from 'react';
 import { FiMoon, FiSun } from 'react-icons/fi';
-import { LuMountain } from 'react-icons/lu';
+import { LuMountain, LuTrees } from 'react-icons/lu';
 import { LAYER_TYPES, type LayerType } from '../../domain/layer/LayerType';
 import { LAYER_LABELS } from '../../domain/layer/layerLabels';
 
@@ -9,6 +9,7 @@ const LAYER_ICONS: Record<LayerType, typeof FiSun> = {
   day: FiSun,
   night: FiMoon,
   topo: LuMountain,
+  biome: LuTrees,
 };
 
 const SELECTED_TAB_INDEX = 0;
@@ -35,7 +36,7 @@ const getNextLayerType = (current: LayerType, key: string): LayerType | undefine
   return undefined;
 };
 
-/** S-01 BottomNavBar。昼/夜/地形の3レイヤーを切り替える(排他選択)。 */
+/** S-01 BottomNavBar。昼/夜/地形/バイオームの4レイヤーを切り替える(排他選択)。 */
 export const LayerSwitcher: FC<LayerSwitcherProps> = ({ value, onChange }) => {
   const handleKeyDown = (event: KeyboardEvent<HTMLButtonElement>) => {
     const nextLayerType = getNextLayerType(value, event.key);

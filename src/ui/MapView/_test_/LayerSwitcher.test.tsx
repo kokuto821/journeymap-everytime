@@ -12,6 +12,7 @@ describe('LayerSwitcher', () => {
     expectLayerChecked('昼', true);
     expectLayerChecked('夜', false);
     expectLayerChecked('地形', false);
+    expectLayerChecked('バイオーム', false);
   });
 
   test('夜のボタンを押したらonChangeにnightが渡される', async () => {
@@ -38,6 +39,18 @@ describe('LayerSwitcher', () => {
     expect(onChange).toHaveBeenCalledWith('topo');
   });
 
+  test('バイオームのボタンを押したらonChangeにbiomeが渡される', async () => {
+    // Arrange
+    const user = userEvent.setup();
+    const { onChange } = renderLayerSwitcher('day');
+
+    // Act
+    await user.click(screen.getByRole('radio', { name: 'バイオーム' }));
+
+    // Assert
+    expect(onChange).toHaveBeenCalledWith('biome');
+  });
+
   test('選択中のボタンで右矢印キーを押したらonChangeに次のレイヤーが渡される', async () => {
     // Arrange
     const user = userEvent.setup();
@@ -61,7 +74,7 @@ describe('LayerSwitcher', () => {
     await user.keyboard('{ArrowLeft}');
 
     // Assert
-    expect(onChange).toHaveBeenCalledWith('topo');
+    expect(onChange).toHaveBeenCalledWith('biome');
   });
 
   test('非選択のボタンはtabIndexが-1になる', () => {
