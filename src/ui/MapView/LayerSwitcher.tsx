@@ -1,6 +1,6 @@
 import type { FC, KeyboardEvent } from 'react';
 import { FiMoon, FiSun } from 'react-icons/fi';
-import { LuMountain, LuPalette } from 'react-icons/lu';
+import { LuBlocks, LuMountain } from 'react-icons/lu';
 import { LAYER_TYPES, type LayerType } from '../../domain/layer/LayerType';
 import { LAYER_LABELS } from '../../domain/layer/layerLabels';
 
@@ -9,7 +9,7 @@ const LAYER_ICONS: Record<LayerType, typeof FiSun> = {
   day: FiSun,
   night: FiMoon,
   topo: LuMountain,
-  biome: LuPalette,
+  biome: LuBlocks,
 };
 
 const SELECTED_TAB_INDEX = 0;
