@@ -7,25 +7,20 @@ describe('useTileLayerUrl', () => {
     vi.unstubAllEnvs();
   });
 
-  test('layerTypeに対応するタイルURLテンプレートを返す', () => {
-    // Arrange
-    vi.stubEnv('VITE_R2_BASE_URL', 'https://example.com');
+  test.each([
+    { layerType: 'night' as const, expected: 'https://example.com/tiles/night/{z}/{x},{y}.png' },
+    { layerType: 'biome' as const, expected: 'https://example.com/tiles/biome/{z}/{x},{y}.png' },
+  ])(
+    'layerTypeが$layerTypeの場合、対応するタイルURLテンプレートを返す',
+    ({ layerType, expected }) => {
+      // Arrange
+      vi.stubEnv('VITE_R2_BASE_URL', 'https://example.com');
 
-    // Act
-    const { result } = renderHook(() => useTileLayerUrl('night'));
+      // Act
+      const { result } = renderHook(() => useTileLayerUrl(layerType));
 
-    // Assert
-    expect(result.current).toBe('https://example.com/tiles/night/{z}/{x},{y}.png');
-  });
-
-  test('layerTypeがbiomeの場合のタイルURLテンプレートを返す', () => {
-    // Arrange
-    vi.stubEnv('VITE_R2_BASE_URL', 'https://example.com');
-
-    // Act
-    const { result } = renderHook(() => useTileLayerUrl('biome'));
-
-    // Assert
-    expect(result.current).toBe('https://example.com/tiles/biome/{z}/{x},{y}.png');
-  });
+      // Assert
+      expect(result.current).toBe(expected);
+    },
+  );
 });
