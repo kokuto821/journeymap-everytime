@@ -40,6 +40,12 @@ npm run format:check       # 整形崩れのチェックのみ(修正しない)
 - **`.prettierignore`** は `*.md` を除外している。日本語ドキュメント(README、要件定義書)がPrettierの対象になると意図しない差分が入るため。ドキュメント系ファイルを新設する場合もこの除外に従う。
 - **データ/インフラ(要件定義書10章)**: ホスティングは Cloudflare Pages(フロント配信)+ Cloudflare R2(タイル等の静的データ、約168MB、未デプロイ)。必要に応じて Cloudflare Workers。エクスポート/デプロイは JourneyMapのローカルデータ(`.minecraft/journeymap/data`)を読み取る `scripts/export`(F-004)と、Wrangler CLI経由でR2へアップロードする `scripts/deploy`(F-005)が実装済みで、ローカルPC上で手動実行する運用。
 
+## UIコンポーネント構成(`src/ui/`)
+
+1コンポーネント=1フォルダ構成(例 `src/ui/MapView/MapView.tsx`)。各フォルダ配下に `_test_/`・`_storybook_/` サブフォルダを置く。コンポーネント専用の非コンポーネントファイル(`gameMapCrs.ts` 等のヘルパー)は同フォルダに同居させてよい。Storybookは `@storybook/react-vite` で導入済み(`.storybook/`)。**新規コンポーネント作成時は `_storybook_/*.stories.tsx` の作成を必須とする**(CSF3形式、既存 `ThemeSwitch.stories.tsx` 等を参考にする)。
+
+**claude-harness-kit一般ルールとの矛盾に注意**: claude-harness-kitプラグイン側の一般ルール(`shared-rules/coding-conventions/coding-rule.md`, `shared-rules/ui-design/architecture/ui-architecture.md`)はStorybookファイルをコンポーネントファイルと同一フォルダに直置きする「コロケーション方式」を規定するが、本プロジェクトは `_test_/` の既存運用との一貫性を優先し `_storybook_` サブフォルダ分離方式を採用する。**本プロジェクトではこのCLAUDE.mdの記載がharness-kit一般ルールに優先する**(issue #56)。
+
 ## openspec(仕様駆動開発)
 
 このリポジトリは [OpenSpec](https://github.com/Fission-AI/OpenSpec) (`@fission-ai/openspec`, グローバルインストール)で初期化済み。`openspec/config.yaml` の `schema: spec-driven` に従う。
