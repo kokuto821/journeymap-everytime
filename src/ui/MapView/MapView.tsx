@@ -5,7 +5,7 @@ import type { LayerType } from '../../domain/layer/LayerType';
 import { getR2BaseUrl } from '../../infrastructure/config/env';
 import { fetchTileMetadata } from '../../infrastructure/tile/tileMetadataProvider';
 import { createGameMapCrs } from './gameMapCrs';
-import { LayerSwitcher } from './LayerSwitcher';
+import { LayerSwitcher } from '../LayerSwitcher/LayerSwitcher';
 import { useTileLayerUrl } from './useTileLayerUrl';
 
 // 未探索領域(タイル404)を空白表示にするための透明1x1px PNG(RGBA全て0)。エラー画面は出さない方針(design.md F-001節)。
