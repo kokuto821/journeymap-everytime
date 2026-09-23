@@ -87,6 +87,22 @@ export default defineConfig([
     },
   },
   {
+    // Storybook設定ファイル(.storybook/)もツール仕様上default exportが必須。
+    // ディレクトリ名`.storybook`はStorybook公式の固定名称のためfilename-case対象外
+    files: ['.storybook/**/*.{ts,tsx}'],
+    rules: {
+      'import-x/no-default-export': 'off',
+      'unicorn/filename-case': 'off',
+    },
+  },
+  {
+    // Storybookのstoryファイル(CSF3)もツール仕様上default exportが必須
+    files: ['**/_storybook_/**/*.{ts,tsx}'],
+    rules: {
+      'import-x/no-default-export': 'off',
+    },
+  },
+  {
     // テストファイルはtoEqualでなくtoStrictEqualを使うことを強制
     files: ['**/_test_/**/*.test.{ts,tsx}'],
     plugins: { vitest },

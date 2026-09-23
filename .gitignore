@@ -35,3 +35,6 @@ scripts/export/output/
 # .claude/settings.json は手で管理するためコミット対象に残す
 .claude/skills/
 .claude/commands/
+
+*storybook.log
+storybook-static
