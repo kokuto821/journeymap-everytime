@@ -166,8 +166,10 @@ const composeQuadrantTile = async ({
   const destPath = buildTileFilePath({ outputRootDir, layer, z, x: parentX, y: parentY });
   ensureParentDirExists(destPath);
 
-  // 2×2タイル(元サイズの2倍角のキャンバス)を合成し、1段下のズームレベルでは
-  // 元サイズの半分に縮小する(design.mdのF-004節で確定した縮小率)。
+  // 2×2タイル(元サイズの2倍角のキャンバス)を合成し、1段下のズームレベルでも
+  // 元タイルサイズを維持したまま縮小する(design.mdのF-004節で確定した方針)。
+  // Web地図の標準的なズームピラミッドは各レベルとも同じ物理ピクセルサイズの
+  // タイルを保つため、ここで元サイズより小さくしてはならない。
   // 合成(composite)と縮小(resize)を同一のsharpパイプラインに繋げると、
   // sharpが内部でresizeを合成前のベース画像に先行適用してしまい、
   // 縮小後のキャンバスより大きい合成対象画像を弾いてしまう(sharpの実装上の制約)。
@@ -190,8 +192,8 @@ const composeQuadrantTile = async ({
     // (座標がまばらに分布する等)でも0px化してsharpのエラーにならないよう、
     // 縮小後サイズは最低1pxを保証する。
     .resize(
-      Math.max(MIN_TILE_DIMENSION_PX, Math.floor(width / QUADRANT_GRID_SIZE)),
-      Math.max(MIN_TILE_DIMENSION_PX, Math.floor(height / QUADRANT_GRID_SIZE)),
+      Math.max(MIN_TILE_DIMENSION_PX, width),
+      Math.max(MIN_TILE_DIMENSION_PX, height),
       { kernel: 'nearest' },
     )
     .png()
