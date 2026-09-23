@@ -14,5 +14,14 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = {
   args: {
     onRetry: () => {},
+    isRetrying: false,
+  },
+};
+
+/** 再試行処理が進行中の表示。再試行ボタンが無効化される。 */
+export const Retrying: Story = {
+  args: {
+    onRetry: () => {},
+    isRetrying: true,
   },
 };

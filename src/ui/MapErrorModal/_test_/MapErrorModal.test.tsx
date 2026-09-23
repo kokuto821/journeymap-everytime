@@ -10,7 +10,7 @@ describe('MapErrorModal', () => {
     const onRetry = vi.fn();
 
     // Act
-    render(<MapErrorModal onRetry={onRetry} />);
+    render(<MapErrorModal onRetry={onRetry} isRetrying={false} />);
 
     // Assert
     expect(screen.getByRole('alert')).toHaveTextContent('地図データの読み込みに失敗しました');
@@ -20,12 +20,23 @@ describe('MapErrorModal', () => {
     // Arrange
     const onRetry = vi.fn();
     const user = userEvent.setup();
-    render(<MapErrorModal onRetry={onRetry} />);
+    render(<MapErrorModal onRetry={onRetry} isRetrying={false} />);
 
     // Act
     await user.click(screen.getByRole('button', { name: '再試行' }));
 
     // Assert
     expect(onRetry).toHaveBeenCalledOnce();
+  });
+
+  test('isRetryingがtrueなら再試行ボタンを無効化する', () => {
+    // Arrange
+    const onRetry = vi.fn();
+
+    // Act
+    render(<MapErrorModal onRetry={onRetry} isRetrying={true} />);
+
+    // Assert
+    expect(screen.getByRole('button')).toBeDisabled();
   });
 });
