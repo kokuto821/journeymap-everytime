@@ -6,6 +6,7 @@ import { getR2BaseUrl } from '../../infrastructure/config/env';
 import { fetchTileMetadata } from '../../infrastructure/tile/tileMetadataProvider';
 import { createGameMapCrs } from './gameMapCrs';
 import { LayerSwitcher } from '../LayerSwitcher/LayerSwitcher';
+import { MapErrorModal } from '../MapErrorModal/MapErrorModal';
 import { useTileLayerUrl } from './useTileLayerUrl';
 
 // 未探索領域(タイル404)を空白表示にするための透明1x1px PNG(RGBA全て0)。エラー画面は出さない方針(design.md F-001節)。
@@ -94,8 +95,13 @@ export const MapView = () => {
     return <p role="status">地図データを読み込み中...</p>;
   }
 
+  const handleRetry = () => {
+    setState({ status: 'loading' });
+    loadMapMetadata().then(setState);
+  };
+
   if (state.status === 'error') {
-    return <p role="alert">地図データの読み込みに失敗しました</p>;
+    return <MapErrorModal onRetry={handleRetry} />;
   }
 
   return <MapCanvas zMax={state.zMax} minZoom={state.minZoom} tileSize={state.tileSize} />;

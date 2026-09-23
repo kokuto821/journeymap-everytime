@@ -159,6 +159,20 @@ describe('MapView', () => {
     });
   });
 
+  test('metadata取得に失敗したら再試行ボタンを表示する', async () => {
+    // Arrange
+    vi.stubEnv('VITE_R2_BASE_URL', 'https://example.com');
+    fetchTileMetadataMock.mockRejectedValue(new Error('network error'));
+
+    // Act
+    render(<MapView />);
+
+    // Assert
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: '再試行' })).toBeInTheDocument();
+    });
+  });
+
   test('夜レイヤーに切り替えたらTileLayerのURLテンプレートがnightのものに切り替わる', async () => {
     // Arrange
     vi.stubEnv('VITE_R2_BASE_URL', 'https://example.com');
