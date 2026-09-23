@@ -41,11 +41,15 @@ const ONE_ZOOM_LEVEL_DOWN = 1;
 const TWO_ZOOM_LEVELS_DOWN = 2;
 const THREE_ZOOM_LEVELS_DOWN = 3;
 
+// 2×2隣接タイルを1枚に合成する固定倍率(本体側のQUADRANT_GRID_SIZEに対応)。
+const QUADRANT_GRID_SIZE = 2;
+
 // 2×2グループの4象限を表す座標(左上/右上/左下/右下)。
+const QUADRANT_BOUNDARY = DEFAULT_NATIVE_TILE_SIZE / QUADRANT_GRID_SIZE;
 const TOP_LEFT = { x: 0, y: 0 };
-const TOP_RIGHT = { x: 2, y: 0 };
-const BOTTOM_LEFT = { x: 0, y: 2 };
-const BOTTOM_RIGHT = { x: 2, y: 2 };
+const TOP_RIGHT = { x: QUADRANT_BOUNDARY, y: 0 };
+const BOTTOM_LEFT = { x: 0, y: QUADRANT_BOUNDARY };
+const BOTTOM_RIGHT = { x: QUADRANT_BOUNDARY, y: QUADRANT_BOUNDARY };
 
 // 複数リージョンタイルのうち代表(1枚目)を参照する際のインデックス。
 const FIRST_REGION_TILE_INDEX = 0;

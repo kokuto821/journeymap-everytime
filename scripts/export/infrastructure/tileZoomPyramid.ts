@@ -6,8 +6,6 @@ import sharp from 'sharp';
 const QUADRANT_GRID_SIZE = 2;
 // 合成対象メンバー(実在する1〜4枚)のうち、代表としてメタデータ取得に使う先頭要素。
 const FIRST_MEMBER_INDEX = 0;
-// 縮小後サイズの下限(0px化によるsharpのエラーを避けるための最小値)。
-const MIN_TILE_DIMENSION_PX = 1;
 // 1段下のズームレベルとの差分。
 const ONE_ZOOM_LEVEL_DOWN = 1;
 
@@ -135,7 +133,7 @@ const groupByParentTileCoordinate = (tiles: ZoomLevelTile[]): ParentTileGroup[] 
 };
 
 /**
- * 2×2グループ(1〜4枚、欠けた象限は透過)を1枚に合成し、半分サイズに縮小して出力する。
+ * 2×2グループ(1〜4枚、欠けた象限は透過)を1枚に合成し、元タイルサイズを維持して出力する。
  */
 const composeQuadrantTile = async ({
   members,
@@ -188,14 +186,7 @@ const composeQuadrantTile = async ({
 
   await sharp(composedBuffer)
     // 縮小時に補間で象限境界の色・透過度が滲まないよう最近傍法を使う。
-    // 座標の不動点収束に必要な段数がタイルサイズの2進桁数を超えるケース
-    // (座標がまばらに分布する等)でも0px化してsharpのエラーにならないよう、
-    // 縮小後サイズは最低1pxを保証する。
-    .resize(
-      Math.max(MIN_TILE_DIMENSION_PX, width),
-      Math.max(MIN_TILE_DIMENSION_PX, height),
-      { kernel: 'nearest' },
-    )
+    .resize(width, height, { kernel: 'nearest' })
     .png()
     .toFile(destPath);
 
