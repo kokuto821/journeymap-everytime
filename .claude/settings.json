@@ -1,14 +1,14 @@
 {
   "extraKnownMarketplaces": {
-    "claude-harness-kit": {
+    "matagi": {
       "source": {
         "source": "github",
-        "repo": "kokuto821/claude-harness-kit"
+        "repo": "kokuto821/matagi"
       }
     }
   },
   "enabledPlugins": {
-    "claude-harness-kit@claude-harness-kit": true
+    "matagi@matagi": true
   },
   "permissions": {
     "deny": ["Skill(openspec-apply-change *)", "Skill(openspec-archive-change *)"]

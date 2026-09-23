@@ -48,17 +48,17 @@ npm run format:check       # 整形崩れのチェックのみ(修正しない)
 - `openspec/changes/`: 変更提案(ADDED/MODIFIED/REMOVEDのデルタ形式)。`openspec/changes/archive/` にアーカイブ済みの変更が入る
 ### ワークフロー
 
-OpenSpecのフェーズ進行は claude-harness-kit の `openspec-workflow` スキルが統括する。各フェーズで起動するスキルは以下。
+OpenSpecのフェーズ進行は matagi の `openspec-workflow` スキルが統括する。各フェーズで起動するスキルは以下。
 
-| フェーズ | 起動するスキル | 内容 |
-|---|---|---|
-| 探索(任意) | `openspec-explore` | 要件が固まっていない場合の壁打ち |
-| 提案 | `openspec-propose` | `openspec/changes/<name>/` に proposal.md・design.md・specs delta・tasks.md 一式を生成する |
-| 提案の見直し(任意) | `openspec-update-change` | 起票済みの提案を直すときは手で編集せずこれに通す。アーティファクト間の整合を保ったまま更新される |
-| 実装 | **`openspec-workflow`**(`openspec-apply-change` は直接起動しない) | tasks.md の未完了タスクを1件ずつ取り出し、実装は産出スキル(`tdd` / `coding` / `test-coding`)へ委譲する |
-| 反映 | **`openspec-workflow`**(`openspec-archive-change` / `openspec-sync-specs` は直接起動しない) | レビューゲートを通した後、実装まで終えた変更を `openspec/specs/` へマージし `openspec/changes/archive/` へ格納する。実装を伴わずスペックだけ本流に取り込む場合は sync を使う |
+| フェーズ           | 起動するスキル                                                                              | 内容                                                                                                                                                                         |
+| ------------------ | ------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 探索(任意)         | `openspec-explore`                                                                          | 要件が固まっていない場合の壁打ち                                                                                                                                             |
+| 提案               | `openspec-propose`                                                                          | `openspec/changes/<name>/` に proposal.md・design.md・specs delta・tasks.md 一式を生成する                                                                                   |
+| 提案の見直し(任意) | `openspec-update-change`                                                                    | 起票済みの提案を直すときは手で編集せずこれに通す。アーティファクト間の整合を保ったまま更新される                                                                             |
+| 実装               | **`openspec-workflow`**(`openspec-apply-change` は直接起動しない)                           | tasks.md の未完了タスクを1件ずつ取り出し、実装は産出スキル(`tdd` / `coding` / `test-coding`)へ委譲する                                                                       |
+| 反映               | **`openspec-workflow`**(`openspec-archive-change` / `openspec-sync-specs` は直接起動しない) | レビューゲートを通した後、実装まで終えた変更を `openspec/specs/` へマージし `openspec/changes/archive/` へ格納する。実装を伴わずスペックだけ本流に取り込む場合は sync を使う |
 
-- 実装・反映のフェーズで CLI生成の `openspec-apply-change` / `openspec-archive-change` / `openspec-sync-specs` を**直接起動しない**。これらは産出スキルへの委譲表もレビューゲートも持たないため、必ず `openspec-workflow` 経由にする(根拠: claude-harness-kit の `shared-rules/openspec-integration/openspec-rule.md`)。
+- 実装・反映のフェーズで CLI生成の `openspec-apply-change` / `openspec-archive-change` / `openspec-sync-specs` を**直接起動しない**。これらは産出スキルへの委譲表もレビューゲートも持たないため、必ず `openspec-workflow` 経由にする(根拠: matagi の `shared-rules/openspec-integration/openspec-rule.md`)。
 - `openspec-*`(グローバルスキル)と `/opsx:*`(例: `/opsx:propose`。このリポジトリのスラッシュコマンド)は同一の内容を指す。どちらを使ってもよい。
 - `.claude/skills/` と `.claude/commands/` は `openspec init` / `openspec update` が再生成する成果物のため `.gitignore` 済み。クローン直後は存在しないので、`openspec update` を実行して生成する(`.claude/settings.json` は手で管理するためコミット対象)。
 - そもそもOpenSpecを使うかどうかの判断基準は `openspec-rule` §いつ OpenSpec の propose を使うか に従う(下記「タスクの進め方」手順4)。
@@ -66,17 +66,17 @@ OpenSpecのフェーズ進行は claude-harness-kit の `openspec-workflow` ス�
 
 ## タスクの進め方（issue駆動開発）
 
-このリポジトリの開発フローは、claude-harness-kit プラグイン(`.claude/settings.json` で有効化済み)のルール・スキルに従う。**判断基準の本文はここに再掲せず、以下を唯一の正とする。**
+このリポジトリの開発フローは、matagi プラグイン(`.claude/settings.json` で有効化済み)のルール・スキルに従う。**判断基準の本文はここに再掲せず、以下を唯一の正とする。**
 
-| 対象 | 参照先(claude-harness-kit内のパス) |
-|---|---|
-| issue化の判断・粒度・ブランチ運用・GitHub操作の承認 | `shared-rules/issue-driven-development/issue-driven-rule.md` |
-| OpenSpecを使うかの判断・フェーズ対応・レビュー独立性 | `shared-rules/openspec-integration/openspec-rule.md` |
-| TDDサイクル(List-Red-Green-Refactor-Commit)とコーディング標準 | `shared-rules/coding-conventions/tdd-rule.md` |
-| レビュワーと産出者を分ける原則 | `rules/harness-engineering/review-independence-rule.md` |
-| 実行フェーズ全体の手順 | `skills/github-issue-resolve/SKILL.md` |
-| OpenSpecのフェーズ進行・実装委譲・レビューゲート | `skills/openspec-workflow/SKILL.md` |
-| TDDサイクルの進行 | `skills/tdd/SKILL.md` |
+| 対象                                                          | 参照先(matagi内のパス)                                       |
+| ------------------------------------------------------------- | ------------------------------------------------------------ |
+| issue化の判断・粒度・ブランチ運用・GitHub操作の承認           | `shared-rules/issue-driven-development/issue-driven-rule.md` |
+| OpenSpecを使うかの判断・フェーズ対応・レビュー独立性          | `shared-rules/openspec-integration/openspec-rule.md`         |
+| TDDサイクル(List-Red-Green-Refactor-Commit)とコーディング標準 | `shared-rules/coding-conventions/tdd-rule.md`                |
+| レビュワーと産出者を分ける原則                                | `rules/harness-engineering/review-independence-rule.md`      |
+| 実行フェーズ全体の手順                                        | `skills/github-issue-resolve/SKILL.md`                       |
+| OpenSpecのフェーズ進行・実装委譲・レビューゲート              | `skills/openspec-workflow/SKILL.md`                          |
+| TDDサイクルの進行                                             | `skills/tdd/SKILL.md`                                        |
 
 ### 手順とスキルの対応
 
@@ -95,12 +95,12 @@ OpenSpecのフェーズ進行は claude-harness-kit の `openspec-workflow` ス�
    - タスクが曖昧、実装がタスク・specの範囲を超える場合は、その場で範囲を広げずユーザーに確認する
 6. **セルフレビュー・修正** — `github-issue-resolve` の REVIEW フェーズ。手順5内のRefactorとは**対象と粒度が異なり、重複しない**
 
-   | | 手順5内の Refactor フェーズ | 手順6 セルフレビュー |
-   |---|---|---|
-   | 粒度 | TDDサイクル1周 | issue単位(PR単位) |
-   | 対象 | 直前のRed/Greenで書いたコードのみ | 全サイクルを経た変更全体 |
-   | 起動するスキル | `coding-review` | `coding-review`(実装・テスト) / `ai-engineering-review`(md資産) / `ui-review`(UI実装) |
-   | 停止条件 | 1ラウンドで打ち切り、残る指摘は次サイクルのRefactorへ送る | 最大2ラウンド。残る指摘は別issueに切り出すか残課題として報告する |
+   |                | 手順5内の Refactor フェーズ                               | 手順6 セルフレビュー                                                                  |
+   | -------------- | --------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+   | 粒度           | TDDサイクル1周                                            | issue単位(PR単位)                                                                     |
+   | 対象           | 直前のRed/Greenで書いたコードのみ                         | 全サイクルを経た変更全体                                                              |
+   | 起動するスキル | `coding-review`                                           | `coding-review`(実装・テスト) / `ai-engineering-review`(md資産) / `ui-review`(UI実装) |
+   | 停止条件       | 1ラウンドで打ち切り、残る指摘は次サイクルのRefactorへ送る | 最大2ラウンド。残る指摘は別issueに切り出すか残課題として報告する                      |
 
    - どちらも**レビューは産出者と別エージェントが行い、指摘の適用は産出者に戻す**。修正後の再検証も修正した本人に委ねない(`review-independence-rule`)
    - OpenSpecを使った場合、`openspec-workflow` の REVIEW ゲートがこの工程にあたる。**このレビューを経ずに手順7のARCHIVEへ進まない**
