@@ -6,7 +6,7 @@ vi.mock('../ui/MapView/MapView', () => ({
   MapView: () => <div data-testid="map-view-stub" />,
 }));
 
-vi.mock('../ui/theme/ThemeSwitch', () => ({
+vi.mock('../ui/ThemeSwitch/ThemeSwitch', () => ({
   ThemeSwitch: () => <div data-testid="theme-switch-stub" />,
 }));
 
