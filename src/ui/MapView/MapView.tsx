@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { MapContainer, TileLayer } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import type { LayerType } from '../../domain/layer/LayerType';
@@ -6,6 +6,7 @@ import { getR2BaseUrl } from '../../infrastructure/config/env';
 import { fetchTileMetadata } from '../../infrastructure/tile/tileMetadataProvider';
 import { createGameMapCrs } from './gameMapCrs';
 import { LayerSwitcher } from '../LayerSwitcher/LayerSwitcher';
+import { MapErrorModal } from '../MapErrorModal/MapErrorModal';
 import { useTileLayerUrl } from './useTileLayerUrl';
 
 // 未探索領域(タイル404)を空白表示にするための透明1x1px PNG(RGBA全て0)。エラー画面は出さない方針(design.md F-001節)。
@@ -75,6 +76,9 @@ const loadMapMetadata = (): Promise<MapMetadataState> =>
 /** S-01地図ビュー画面。R2上のmetadata.jsonを取得し、初期レイヤー(昼)のタイルを表示する。 */
 export const MapView = () => {
   const [state, setState] = useState<MapMetadataState>({ status: 'loading' });
+  const [isRetrying, setIsRetrying] = useState(false);
+  // 再試行の連打で古い結果が新しい結果を上書きしないよう、最新の呼び出しのみ識別するトークン。
+  const retryTokenRef = useRef<object | null>(null);
 
   useEffect(() => {
     const cancelledRef = { current: false };
@@ -94,8 +98,26 @@ export const MapView = () => {
     return <p role="status">地図データを読み込み中...</p>;
   }
 
+  /**
+   * 再試行を呼ぶたびに新しいトークンを発行し、retryTokenRef.currentに保持する。
+   * loadMapMetadata()の応答時にトークンが一致する場合(＝直近の呼び出しである場合)のみ
+   * state・isRetryingへ反映する。連打で古い応答が新しい応答を上書きするのを防ぐ。
+   */
+  const handleRetry = () => {
+    const retryToken = {};
+    retryTokenRef.current = retryToken;
+    setIsRetrying(true);
+
+    loadMapMetadata().then((nextState) => {
+      if (retryTokenRef.current === retryToken) {
+        setState(nextState);
+        setIsRetrying(false);
+      }
+    });
+  };
+
   if (state.status === 'error') {
-    return <p role="alert">地図データの読み込みに失敗しました</p>;
+    return <MapErrorModal onRetry={handleRetry} isRetrying={isRetrying} />;
   }
 
   return <MapCanvas zMax={state.zMax} minZoom={state.minZoom} tileSize={state.tileSize} />;

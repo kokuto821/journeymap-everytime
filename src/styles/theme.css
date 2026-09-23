@@ -17,6 +17,7 @@
   --outline: #7a7582;
   --primary: #4f378a;
   --on-primary: #ffffff;
+  --error: #ba1a1a;
 
   /* 影無し(フラット)、境界線1px、角丸12px */
   --border-width: 1px;
@@ -40,6 +41,7 @@
   --outline: #1a1a1e;
   --primary: #ffd23f;
   --on-primary: #1a1a1e;
+  --error: #d32f2f;
 
   /* 太い黒枠＋ぼかし無しハードシャドウ、角丸なし */
   --border-width: 3px;

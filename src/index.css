@@ -13,6 +13,7 @@
   --color-outline: var(--outline);
   --color-primary: var(--primary);
   --color-on-primary: var(--on-primary);
+  --color-error: var(--error);
   --shadow-token: var(--shadow);
   --shadow-raised-token: var(--shadow-raised);
   --spacing-2xs: var(--space-2xs);
