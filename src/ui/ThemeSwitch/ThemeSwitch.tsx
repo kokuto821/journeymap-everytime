@@ -17,7 +17,7 @@ export const ThemeSwitch = () => {
     group:
       'absolute top-m right-m z-overlay flex gap-xs p-2xs border-token border-solid border-outline rounded-full bg-surface shadow-token',
     button:
-      'py-2xs px-s border-none rounded-full cursor-pointer active:translate-x-token active:translate-y-token',
+      'py-2xs px-s border-none rounded-full cursor-pointer enabled:active:translate-x-token enabled:active:translate-y-token',
     buttonInactive: 'bg-transparent text-on-surface-variant',
     buttonActive: 'bg-primary text-on-primary',
   };
