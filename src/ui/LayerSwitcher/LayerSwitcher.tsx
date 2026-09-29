@@ -50,7 +50,7 @@ export const LayerSwitcher: FC<LayerSwitcherProps> = ({ value, onChange }) => {
     group:
       'absolute bottom-l left-1/2 -translate-x-1/2 z-overlay flex gap-xs p-2xs border-token border-solid border-outline rounded-full bg-surface shadow-token',
     button:
-      'flex items-center justify-center w-11 h-11 border-none rounded-full cursor-pointer transition-transform active:translate-x-token active:translate-y-token',
+      'flex items-center justify-center w-11 h-11 border-none rounded-full cursor-pointer transition-transform enabled:active:translate-x-token enabled:active:translate-y-token',
     buttonInactive: 'bg-transparent text-on-surface-variant',
     buttonActive: 'bg-primary text-on-primary scale-110 shadow-raised-token',
   };

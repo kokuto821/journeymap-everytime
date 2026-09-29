@@ -14,7 +14,7 @@ export const MapErrorModal: FC<MapErrorModalProps> = ({ onRetry, isRetrying }) =
     card: 'flex flex-col items-center gap-m p-l border-token border-solid border-outline rounded-xl bg-surface shadow-token',
     message: 'text-error',
     button:
-      'py-2xs px-s border-none rounded-full cursor-pointer bg-primary text-on-primary active:translate-x-token active:translate-y-token disabled:cursor-not-allowed disabled:opacity-50',
+      'py-2xs px-s border-none rounded-full cursor-pointer bg-primary text-on-primary enabled:active:translate-x-token enabled:active:translate-y-token disabled:cursor-not-allowed disabled:opacity-50',
   };
 
   return (

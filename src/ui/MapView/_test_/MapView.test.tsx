@@ -206,4 +206,42 @@ describe('MapView', () => {
     });
     expect(fetchTileMetadataMock).not.toHaveBeenCalled();
   });
+
+  test('初期表示時はCoordinatePanelがプレースホルダを表示する', async () => {
+    // Arrange
+    vi.stubEnv('VITE_R2_BASE_URL', 'https://example.com');
+    fetchTileMetadataMock.mockResolvedValue(createTileMetadata());
+
+    // Act
+    render(<MapView />);
+
+    // Assert
+    await waitFor(() => {
+      expect(screen.getByText('地図をタップして座標表示')).toBeInTheDocument();
+    });
+  });
+
+  test('地図をクリックしたらCoordinatePanelにプレースホルダに代わって座標が表示される', async () => {
+    // Arrange
+    vi.stubEnv('VITE_R2_BASE_URL', 'https://example.com');
+    fetchTileMetadataMock.mockResolvedValue(createTileMetadata());
+    const user = userEvent.setup();
+    render(<MapView />);
+    await waitFor(() => {
+      expect(document.querySelector('.leaflet-container')).toBeInTheDocument();
+    });
+    const container = document.querySelector<HTMLElement>('.leaflet-container');
+    if (!container) {
+      throw new Error('leaflet-containerが見つかりませんでした');
+    }
+
+    // Act
+    await user.click(container);
+
+    // Assert: 座標が入ると「コピー」ボタンが活性化する(プレースホルダ時はdisabled)
+    await waitFor(() => {
+      expect(screen.queryByText('地図をタップして座標表示')).not.toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'コピー' })).toBeEnabled();
+    });
+  });
 });

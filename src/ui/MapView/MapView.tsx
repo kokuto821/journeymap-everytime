@@ -2,12 +2,15 @@ import { useEffect, useRef, useState } from 'react';
 import { MapContainer, TileLayer } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import type { LayerType } from '../../domain/layer/LayerType';
+import type { WorldCoordinate } from '../../domain/coordinate/WorldCoordinate';
 import { getR2BaseUrl } from '../../infrastructure/config/env';
 import { fetchTileMetadata } from '../../infrastructure/tile/tileMetadataProvider';
 import { createGameMapCrs } from './gameMapCrs';
 import { LayerSwitcher } from '../LayerSwitcher/LayerSwitcher';
 import { MapErrorModal } from '../MapErrorModal/MapErrorModal';
+import { CoordinatePanel } from '../CoordinatePanel/CoordinatePanel';
 import { useTileLayerUrl } from './useTileLayerUrl';
+import { useMapCoordinate } from './useMapCoordinate';
 
 // 未探索領域(タイル404)を空白表示にするための透明1x1px PNG(RGBA全て0)。エラー画面は出さない方針(design.md F-001節)。
 export const TRANSPARENT_TILE_URL =
@@ -29,6 +32,25 @@ const MAP_CENTER_LAT = 0;
 const MAP_CENTER_LNG = 0;
 const MAP_CENTER: [number, number] = [MAP_CENTER_LAT, MAP_CENTER_LNG];
 
+type CoordinateTrackerProps = {
+  /** 地図クリック地点の座標が変化した際に呼ばれるコールバック */
+  onWorldCoordinateChange: (worldCoordinate: WorldCoordinate | null) => void;
+};
+
+/**
+ * useMapCoordinate(内部でuseMapEventを使用)をMapContainer配下で呼ぶための橋渡し用コンポーネント。
+ * 取得した座標はコールバック経由で親(MapCanvas)のstateへリフトアップする。
+ */
+const CoordinateTracker = ({ onWorldCoordinateChange }: CoordinateTrackerProps) => {
+  const { clickedWorldCoordinate } = useMapCoordinate();
+
+  useEffect(() => {
+    onWorldCoordinateChange(clickedWorldCoordinate);
+  }, [clickedWorldCoordinate, onWorldCoordinateChange]);
+
+  return null;
+};
+
 /**
  * metadata.json取得後に組み立てる地図本体。
  * CRSはzMax確定後でないと正しく組み立てられないため、MapView側でloaded後のみ描画する。
@@ -36,6 +58,7 @@ const MAP_CENTER: [number, number] = [MAP_CENTER_LAT, MAP_CENTER_LNG];
 const MapCanvas = ({ zMax, minZoom, tileSize }: MapCanvasProps) => {
   const style = { canvas: 'absolute inset-0' };
   const [layerType, setLayerType] = useState<LayerType>('day');
+  const [clickedWorldCoordinate, setClickedWorldCoordinate] = useState<WorldCoordinate | null>(null);
   const tileUrl = useTileLayerUrl(layerType);
   const crs = createGameMapCrs(zMax);
 
@@ -50,8 +73,10 @@ const MapCanvas = ({ zMax, minZoom, tileSize }: MapCanvasProps) => {
         maxZoom={zMax}
       >
         <TileLayer url={tileUrl} tileSize={tileSize} noWrap errorTileUrl={TRANSPARENT_TILE_URL} />
+        <CoordinateTracker onWorldCoordinateChange={setClickedWorldCoordinate} />
       </MapContainer>
       <LayerSwitcher value={layerType} onChange={setLayerType} />
+      <CoordinatePanel worldCoordinate={clickedWorldCoordinate} />
     </>
   );
 };
