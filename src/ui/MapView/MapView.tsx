@@ -33,19 +33,20 @@ const MAP_CENTER_LNG = 0;
 const MAP_CENTER: [number, number] = [MAP_CENTER_LAT, MAP_CENTER_LNG];
 
 type CoordinateTrackerProps = {
-  onCoordinateChange: (coordinate: WorldCoordinate | null) => void;
+  /** 地図クリック地点の座標が変化した際に呼ばれるコールバック */
+  onWorldCoordinateChange: (worldCoordinate: WorldCoordinate | null) => void;
 };
 
 /**
  * useMapCoordinate(内部でuseMapEventを使用)をMapContainer配下で呼ぶための橋渡し用コンポーネント。
  * 取得した座標はコールバック経由で親(MapCanvas)のstateへリフトアップする。
  */
-const CoordinateTracker = ({ onCoordinateChange }: CoordinateTrackerProps) => {
-  const { coordinate } = useMapCoordinate();
+const CoordinateTracker = ({ onWorldCoordinateChange }: CoordinateTrackerProps) => {
+  const { clickedWorldCoordinate } = useMapCoordinate();
 
   useEffect(() => {
-    onCoordinateChange(coordinate);
-  }, [coordinate, onCoordinateChange]);
+    onWorldCoordinateChange(clickedWorldCoordinate);
+  }, [clickedWorldCoordinate, onWorldCoordinateChange]);
 
   return null;
 };
@@ -57,7 +58,7 @@ const CoordinateTracker = ({ onCoordinateChange }: CoordinateTrackerProps) => {
 const MapCanvas = ({ zMax, minZoom, tileSize }: MapCanvasProps) => {
   const style = { canvas: 'absolute inset-0' };
   const [layerType, setLayerType] = useState<LayerType>('day');
-  const [coordinate, setCoordinate] = useState<WorldCoordinate | null>(null);
+  const [clickedWorldCoordinate, setClickedWorldCoordinate] = useState<WorldCoordinate | null>(null);
   const tileUrl = useTileLayerUrl(layerType);
   const crs = createGameMapCrs(zMax);
 
@@ -72,10 +73,10 @@ const MapCanvas = ({ zMax, minZoom, tileSize }: MapCanvasProps) => {
         maxZoom={zMax}
       >
         <TileLayer url={tileUrl} tileSize={tileSize} noWrap errorTileUrl={TRANSPARENT_TILE_URL} />
-        <CoordinateTracker onCoordinateChange={setCoordinate} />
+        <CoordinateTracker onWorldCoordinateChange={setClickedWorldCoordinate} />
       </MapContainer>
       <LayerSwitcher value={layerType} onChange={setLayerType} />
-      <CoordinatePanel coordinate={coordinate} />
+      <CoordinatePanel worldCoordinate={clickedWorldCoordinate} />
     </>
   );
 };

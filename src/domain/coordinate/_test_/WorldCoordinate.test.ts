@@ -3,12 +3,16 @@ import { createWorldCoordinate } from '../WorldCoordinate';
 
 describe('createWorldCoordinate', () => {
   test('正常な整数x/zで生成できたら値を保持する', () => {
+    // Arrange
+    const x = 5;
+    const z = -3;
+
     // Act
-    const result = createWorldCoordinate({ x: 5, z: -3 });
+    const result = createWorldCoordinate({ x, z });
 
     // Assert
-    expect(result.x).toBe(5);
-    expect(result.z).toBe(-3);
+    expect(result.x).toBe(x);
+    expect(result.z).toBe(z);
   });
 
   test('xが非整数だとErrorをthrowする', () => {

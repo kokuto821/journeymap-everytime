@@ -16,28 +16,28 @@ describe('CoordinatePanel', () => {
     writeToClipboardMock.mockReset();
   });
 
-  test('coordinateがnullのときプレースホルダ文言が表示される', () => {
+  test('worldCoordinateがnullのときプレースホルダ文言が表示される', () => {
     // Arrange & Act
-    render(<CoordinatePanel coordinate={null} />);
+    render(<CoordinatePanel worldCoordinate={null} />);
 
     // Assert
     expect(screen.getByText('地図をタップして座標表示')).toBeInTheDocument();
   });
 
-  test('coordinateがnullのときコピーボタンがdisabledである', () => {
+  test('worldCoordinateがnullのときコピーボタンがdisabledである', () => {
     // Arrange & Act
-    render(<CoordinatePanel coordinate={null} />);
+    render(<CoordinatePanel worldCoordinate={null} />);
 
     // Assert
-    expect(screen.getByRole('button', { name: /コピー/ })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'コピー' })).toBeDisabled();
   });
 
-  test('coordinateが指定されているとき「X, Z」形式で座標が表示される', () => {
+  test('worldCoordinateが指定されているとき「X, Z」形式で座標が表示される', () => {
     // Arrange
-    const coordinate = createWorldCoordinate({ x: 123, z: -456 });
+    const worldCoordinate = createWorldCoordinate({ x: 123, z: -456 });
 
     // Act
-    render(<CoordinatePanel coordinate={coordinate} />);
+    render(<CoordinatePanel worldCoordinate={worldCoordinate} />);
 
     // Assert
     expect(screen.getByText('123, -456')).toBeInTheDocument();
@@ -45,13 +45,13 @@ describe('CoordinatePanel', () => {
 
   test('コピーボタン押下でwriteToClipboardが「x, z」形式の文字列で呼ばれる', async () => {
     // Arrange
-    const coordinate = createWorldCoordinate({ x: 123, z: -456 });
+    const worldCoordinate = createWorldCoordinate({ x: 123, z: -456 });
     writeToClipboardMock.mockResolvedValue(true);
     const user = userEvent.setup();
-    render(<CoordinatePanel coordinate={coordinate} />);
+    render(<CoordinatePanel worldCoordinate={worldCoordinate} />);
 
     // Act
-    await user.click(screen.getByRole('button', { name: /コピー/ }));
+    await user.click(screen.getByRole('button', { name: 'コピー' }));
 
     // Assert
     expect(writeToClipboardMock).toHaveBeenCalledWith('123, -456');
@@ -59,33 +59,33 @@ describe('CoordinatePanel', () => {
 
   test('コピー成功時に成功が分かる表示になる', async () => {
     // Arrange
-    const coordinate = createWorldCoordinate({ x: 123, z: -456 });
+    const worldCoordinate = createWorldCoordinate({ x: 123, z: -456 });
     writeToClipboardMock.mockResolvedValue(true);
     const user = userEvent.setup();
-    render(<CoordinatePanel coordinate={coordinate} />);
+    render(<CoordinatePanel worldCoordinate={worldCoordinate} />);
 
     // Act
-    await user.click(screen.getByRole('button', { name: /コピー/ }));
+    await user.click(screen.getByRole('button', { name: 'コピー' }));
 
     // Assert
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: /コピーしました/ })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'コピーしました' })).toBeInTheDocument();
     });
   });
 
   test('コピー失敗時に失敗が分かる表示になる', async () => {
     // Arrange
-    const coordinate = createWorldCoordinate({ x: 123, z: -456 });
+    const worldCoordinate = createWorldCoordinate({ x: 123, z: -456 });
     writeToClipboardMock.mockResolvedValue(false);
     const user = userEvent.setup();
-    render(<CoordinatePanel coordinate={coordinate} />);
+    render(<CoordinatePanel worldCoordinate={worldCoordinate} />);
 
     // Act
-    await user.click(screen.getByRole('button', { name: /コピー/ }));
+    await user.click(screen.getByRole('button', { name: 'コピー' }));
 
     // Assert
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: /コピーに失敗/ })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'コピーに失敗しました' })).toBeInTheDocument();
     });
     expect(screen.getByText('123, -456')).toBeInTheDocument();
   });

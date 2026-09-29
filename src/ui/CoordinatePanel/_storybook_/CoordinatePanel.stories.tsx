@@ -14,13 +14,13 @@ type Story = StoryObj<typeof meta>;
 /** 未クリック状態。プレースホルダ文言が表示され、コピーボタンはdisabled。 */
 export const Placeholder: Story = {
   args: {
-    coordinate: null,
+    worldCoordinate: null,
   },
 };
 
-/** 座標クリック後の表示。「X, Z」形式で座標が表示され、コピーボタンが押下可能。 */
+/** 座標クリック後の表示。「X, Z」形式で座標が表示され、コピーアイコンボタンが押下可能。 */
 export const WithCoordinate: Story = {
   args: {
-    coordinate: createWorldCoordinate({ x: 123, z: -456 }),
+    worldCoordinate: createWorldCoordinate({ x: 123, z: -456 }),
   },
 };

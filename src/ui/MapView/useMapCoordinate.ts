@@ -5,7 +5,7 @@ import type { WorldCoordinate } from '../../domain/coordinate/WorldCoordinate';
 
 export type UseMapCoordinateResult = {
   /** 地図上で最後にクリックされた地点のワールド座標。クリック前はnull */
-  coordinate: WorldCoordinate | null;
+  clickedWorldCoordinate: WorldCoordinate | null;
 };
 
 /**
@@ -14,11 +14,11 @@ export type UseMapCoordinateResult = {
  * react-leafletのuseMapEventを使うため、MapContainer配下でのみ利用できる。
  */
 export const useMapCoordinate = (): UseMapCoordinateResult => {
-  const [coordinate, setCoordinate] = useState<WorldCoordinate | null>(null);
+  const [clickedWorldCoordinate, setClickedWorldCoordinate] = useState<WorldCoordinate | null>(null);
 
   useMapEvent('click', (event) => {
-    setCoordinate(convertLatLngToWorldCoordinate(event.latlng, event.target.getZoom()));
+    setClickedWorldCoordinate(convertLatLngToWorldCoordinate(event.latlng));
   });
 
-  return { coordinate };
+  return { clickedWorldCoordinate };
 };

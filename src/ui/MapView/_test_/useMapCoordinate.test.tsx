@@ -4,6 +4,11 @@ import { MapContainer } from 'react-leaflet';
 import { describe, expect, test } from 'vitest';
 import { useMapCoordinate } from '../useMapCoordinate';
 
+const INITIAL_CENTER_LAT = 0;
+const INITIAL_CENTER_LNG = 0;
+const INITIAL_CENTER: [number, number] = [INITIAL_CENTER_LAT, INITIAL_CENTER_LNG];
+const INITIAL_ZOOM = 0;
+
 /** useMapCoordinateはMapContainer配下(react-leafletのuseMapEvent)でのみ動作するため、実描画したMapContainer経由で結果を取得する。 */
 const renderUseMapCoordinate = () => {
   let hookResult: ReturnType<typeof useMapCoordinate> | undefined;
@@ -14,7 +19,7 @@ const renderUseMapCoordinate = () => {
   };
 
   render(
-    <MapContainer center={[0, 0]} zoom={0} style={{ height: '100px', width: '100px' }}>
+    <MapContainer center={INITIAL_CENTER} zoom={INITIAL_ZOOM} style={{ height: '100px', width: '100px' }}>
       <HookProbe />
     </MapContainer>,
   );
@@ -30,7 +35,7 @@ const renderUseMapCoordinate = () => {
 };
 
 describe('useMapCoordinate', () => {
-  test('初期状態ではcoordinateがnullである', async () => {
+  test('初期状態ではclickedWorldCoordinateがnullである', async () => {
     // Arrange & Act
     const { getResult } = renderUseMapCoordinate();
 
@@ -38,10 +43,10 @@ describe('useMapCoordinate', () => {
     await waitFor(() => {
       expect(document.querySelector('.leaflet-container')).toBeInTheDocument();
     });
-    expect(getResult().coordinate).toBeNull();
+    expect(getResult().clickedWorldCoordinate).toBeNull();
   });
 
-  test('地図クリックしたらconvertLatLngToWorldCoordinateの変換結果がcoordinateにセットされる', async () => {
+  test('地図クリックしたらconvertLatLngToWorldCoordinateの変換結果がclickedWorldCoordinateにセットされる', async () => {
     // Arrange
     const user = userEvent.setup();
     const { getResult } = renderUseMapCoordinate();
@@ -58,9 +63,9 @@ describe('useMapCoordinate', () => {
 
     // Assert
     await waitFor(() => {
-      expect(getResult().coordinate).not.toBeNull();
+      expect(getResult().clickedWorldCoordinate).not.toBeNull();
     });
-    expect(getResult().coordinate?.x).toEqual(expect.any(Number));
-    expect(getResult().coordinate?.z).toEqual(expect.any(Number));
+    expect(getResult().clickedWorldCoordinate?.x).toStrictEqual(expect.any(Number));
+    expect(getResult().clickedWorldCoordinate?.z).toStrictEqual(expect.any(Number));
   });
 });
